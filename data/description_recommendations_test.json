@@ -1,0 +1,51 @@
+[
+    {
+        "name": "Dell G15 5520",
+        "price_egp": 42499,
+        "why_it_matches": "This laptop offers a robust 12th Gen Intel Core i7-12700H processor and an NVIDIA GeForce RTX 3060 GPU with 6GB GDDR6, which is highly capable for Deep Learning workloads. The 16GB of fast DDR5 RAM meets the minimum requirement and enhances performance. Its price is well within the 50,000 EGP budget, offering excellent value for the specifications.",
+        "pros": [
+            "Powerful Intel Core i7-12700H processor.",
+            "Dedicated NVIDIA RTX 3060 6GB GPU provides strong performance for Deep Learning model training.",
+            "Features 16GB of newer, faster DDR5 RAM.",
+            "Good cooling system for sustained workloads.",
+            "Durable build quality."
+        ],
+        "cons": [
+            "Storage might be limited to 512GB SSD in some configurations, which can fill up quickly with large datasets (though upgradeable).",
+            "RTX 3060, while powerful, is not the latest generation GPU architecture."
+        ]
+    },
+    {
+        "name": "ASUS ROG Strix G15 G513RM-HF284W",
+        "price_egp": 47699,
+        "why_it_matches": "Equipped with an AMD Ryzen 7 6800H processor and an NVIDIA GeForce RTX 3060 6GB GPU, this laptop provides a potent combination for Deep Learning. The 16GB DDR4 RAM is sufficient, and the overall performance capabilities align well with the needs of a CS student for demanding computational tasks, all within the specified budget.",
+        "pros": [
+            "Excellent AMD Ryzen 7 6800H processor for strong multi-core performance.",
+            "NVIDIA GeForce RTX 3060 6GB GPU is very capable for Deep Learning and GPU-accelerated tasks.",
+            "Sturdy build quality and good aesthetic design.",
+            "High refresh rate display (300Hz FHD) enhances user experience.",
+            "Often praised for good battery life for a gaming laptop."
+        ],
+        "cons": [
+            "Uses DDR4 RAM instead of the newer DDR5.",
+            "Some configurations might lack a built-in webcam and numpad, which could be inconvenient for some users.",
+            "Older models were noted to run hot, but newer iterations show improved cooling."
+        ]
+    },
+    {
+        "name": "Acer Nitro V 15 ANV15-52-58E2",
+        "price_egp": 45000,
+        "why_it_matches": "This laptop stands out with its newer generation NVIDIA GeForce RTX 5050 GPU, featuring 8GB GDDR7 VRAM, which is a significant advantage for Deep Learning due to enhanced efficiency and AI capabilities. The 13th Gen Intel Core i5-13420H processor and 16GB DDR4 RAM offer a solid foundation, all while staying comfortably within the 50,000 EGP budget.",
+        "pros": [
+            "Latest generation NVIDIA GeForce RTX 5050 8GB GDDR7 GPU, providing excellent performance for modern Deep Learning models and AI workloads.",
+            "Competitive price point for the included GPU power.",
+            "Efficient cooling system for sustained performance.",
+            "165Hz Full HD display for a smooth visual experience."
+        ],
+        "cons": [
+            "The Intel Core i5-13420H processor, while capable, is less powerful than the i7 or Ryzen 7 options in other recommendations.",
+            "Comes with DDR4 RAM, not the faster DDR5.",
+            "Standard 512GB SSD might require an upgrade for extensive Deep Learning datasets."
+        ]
+    }
+]
