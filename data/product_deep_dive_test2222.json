@@ -1,0 +1,52 @@
+{
+    "name": "Samsung Galaxy S24 Ultra 256GB",
+    "rating": 4.7,
+    "current_price_egp": 59999,
+    "lowest_ever_price": 59999,
+    "price_history_6m": [
+        {
+            "month": "January",
+            "price": 62000
+        },
+        {
+            "month": "February",
+            "price": 61500
+        },
+        {
+            "month": "March",
+            "price": 61000
+        },
+        {
+            "month": "April",
+            "price": 60500
+        },
+        {
+            "month": "May",
+            "price": 60000
+        },
+        {
+            "month": "June",
+            "price": 59999
+        }
+    ],
+    "pros": [
+        "Exceptional camera system with impressive zoom capabilities",
+        "Powerful performance driven by the Snapdragon 8 Gen 3 for Galaxy processor",
+        "Bright, anti-reflective flat display offering excellent visibility",
+        "Excellent battery life providing all-day usage",
+        "Integrated S Pen functionality enhancing productivity and creativity"
+    ],
+    "cons": [
+        "Very high price point making it less accessible for many consumers",
+        "Minimal design changes compared to its predecessor, the S23 Ultra",
+        "Charging speed is not competitive with some rival flagship devices",
+        "Heavy and bulky design which might not appeal to all users"
+    ],
+    "sentiment_summary": "Egyptian consumers generally perceive the S24 Ultra as a premium, top-tier device, highly valuing its exceptional camera, powerful performance, and integrated S Pen. While the high price is a common point of discussion, many consider it a worthwhile investment due to the long-term software support and comprehensive feature set, with growing interest in its AI capabilities.",
+    "links": [
+        "https://www.amazon.eg/-/en/Samsung-Galaxy-S24-Ultra-Titanium/dp/B0CSQ1291F",
+        "https://www.noon.com/egypt-en/galaxy-s24-ultra-5g-dual-sim-titanium-gray-12gb-ram-256gb-5g-egyptian-version/N74844005A/p",
+        "https://btech.com/en/product/samsung-galaxy-s24-ultra-256-gb-12-gb-ram-titanium-gray-sm-s928bztgegy"
+    ],
+    "lowest_price_link": "https://www.amazon.eg/-/en/Samsung-Galaxy-S24-Ultra-Titanium/dp/B0CSQ1291F"
+}
