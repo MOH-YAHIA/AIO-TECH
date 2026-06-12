@@ -41,7 +41,7 @@ class DeepDiveAnalyzer:
         # Initialize the modern Google GenAI Client
         self.client = genai.Client(api_key=api_key)
         # Using 2.5 Flash for optimal performance-to-latency ratio
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-2.5-flash-lite"
 
     def analyze_product(self, product_query: str) -> dict:
         """

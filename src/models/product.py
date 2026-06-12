@@ -1,3 +1,4 @@
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import Column, Integer, String, Float, DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 from src.core.database import Base  # Importing the central declarative base
@@ -22,3 +23,10 @@ class ProductAnalysis(Base):
     # Automatically tracks when data becomes stale
     last_ai_update = Column(DateTime, server_default=func.now(), onupdate=func.now())
     image_url = Column(String, nullable=True)
+    embedding = Column(Vector(768), nullable=True)  # 768-dimensional vector for semantic search
+
+# --- TEST HARNESS ---
+if __name__ == "__main__":
+    p=  ProductAnalysis()
+    p.embedding = [0.1]*768  # Example embedding vector
+    print(p.embedding)

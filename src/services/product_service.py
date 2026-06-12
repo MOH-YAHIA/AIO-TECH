@@ -6,6 +6,7 @@ from src.models.product import ProductAnalysis
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
+from src.services.embedding_service import generate_embedding
 
 class ProductWorkflowManager:
     def __init__(self):
@@ -58,6 +59,17 @@ class ProductWorkflowManager:
         # Build clean link arrays filtering out any stores that weren't found
         verified_url_list = [url for url in real_market_links.values() if url is not None]
 
+        # 1. Create a dense context string combining all semantic value
+        rich_context = f"Product: {standardized_name}. "
+        rich_context += f"Summary: {ai_data.get('sentiment_summary', '')}. "
+        rich_context += f"Pros: {', '.join(ai_data.get('pros', []))}. "
+        rich_context += f"Cons: {', '.join(ai_data.get('cons', []))}."
+
+        # 2. Generate the mathematical vector
+        print("🧠 Compiling semantic vector embedding for intent matching...")
+        product_vector = generate_embedding(rich_context)
+
+
         try:
             if cached_product:
                 print(f"🔄 Hydrating stale record for ID: {cached_product.id}")
@@ -73,6 +85,8 @@ class ProductWorkflowManager:
                 cached_product.lowest_price_link = real_market_links.get("amazon") or real_market_links.get("noon")
                 cached_product.last_ai_update = datetime.now()
                 cached_product.image_url = discovered_image
+                cached_product.embedding = product_vector
+
                 db.commit()
                 db.refresh(cached_product)
                 active_record = cached_product
@@ -91,7 +105,8 @@ class ProductWorkflowManager:
                     # Injecting SerpApi verified arrays
                     links=verified_url_list,
                     image_url=discovered_image,
-                    lowest_price_link=real_market_links.get("amazon") or real_market_links.get("noon")
+                    lowest_price_link=real_market_links.get("amazon") or real_market_links.get("noon"),
+                    embedding=product_vector
                 )
                 db.add(new_product)
                 db.commit()
@@ -122,6 +137,8 @@ if __name__ == "__main__":
     # Example product query for testing
     product_to_check = "Apple iPhone 14 Pro Max"
     result = ProductWorkflowManager().process_deep_dive(db, product_to_check)
+    print(result)
+    
     print(result['data'].name)
     print(result['data'].current_price_egp)
     print(result['data'].links)
@@ -129,3 +146,4 @@ if __name__ == "__main__":
     print(result['data'].pros)
     print(result['data'].cons)
     print(result['data'].image_url)
+    print(f"Embedding Vector Length: {len(result['data'].embedding)}")

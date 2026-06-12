@@ -2,6 +2,7 @@ import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base, sessionmaker
+from pgvector.sqlalchemy import Vector 
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,6 +33,8 @@ class ProductAnalysis(Base):
     last_ai_update = Column(DateTime, server_default=func.now(), onupdate=func.now())
     image_url = Column(String, nullable=True)
 
+    embedding = Column(Vector(768), nullable=True)
+
 # 3. Execution Pipeline
 def build_database_schema():
     print("🚀 Connecting to your new database to build schemas...")
@@ -40,6 +43,9 @@ def build_database_schema():
         # Invariant: Extension must be initialized BEFORE table/index creation
         print("🔧 Enabling PostgreSQL Trigram Extension...")
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm;"))
+
+        # Invariant: Vector extension for semantic search with embeddings
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         conn.commit()
 
     print("🏗️  Creating tables via SQLAlchemy ORM...")
