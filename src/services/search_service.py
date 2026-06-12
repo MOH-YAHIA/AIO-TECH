@@ -1,9 +1,5 @@
-from src.services.serp_service import SerpLinkFetcher
-from src.services.gemini_service import DeepDiveAnalyzer
 from src.models.product import ProductAnalysis
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
-from datetime import datetime, timedelta
 from src.services.embedding_service import VectorEmbedding
 
 

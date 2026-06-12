@@ -15,7 +15,28 @@ class ProductWorkflowManager:
         self.similarity_threshold = 0.4
         self.cache_expiration_hours = 24
         self.embedding_generator = VectorEmbedding()
-
+    def _format_for_api(self, product: ProductAnalysis) -> dict:
+        """
+        Strips away internal SQLAlchemy state and the heavy 768-D vector,
+        returning only the clean data required by the frontend UI.
+        """
+        return {
+            "id": product.id,
+            "name": product.name,
+            "rating": product.rating,
+            "current_price_egp": product.current_price_egp,
+            "lowest_ever_price": product.lowest_ever_price,
+            "price_history_6m": product.price_history_6m,
+            "pros": product.pros,
+            "cons": product.cons,
+            "sentiment_summary": product.sentiment_summary,
+            "links": product.links,
+            "lowest_price_link": product.lowest_price_link,
+            "image_url": product.image_url,
+            # Convert datetime to string safely
+            "last_ai_update": product.last_ai_update.isoformat() if product.last_ai_update else None
+        }
+    
     def process_deep_dive(self, db: Session, user_query: str):
         print(f"🔍 Analyzing product discovery request for string: '{user_query}'")
         
@@ -38,7 +59,7 @@ class ProductWorkflowManager:
                 print("🎯 Cache Hit! Serving fresh data immediately from PostgreSQL.")
                 return {
                     "source": "database_cache",
-                    "data": cached_product
+                    "data": self._format_for_api(cached_product) # 👈 Cleaned!
                 }
             print("⏳ Cache Stale! The data is older than 24 hours. Triggering refresh...")
 
@@ -116,9 +137,9 @@ class ProductWorkflowManager:
                 
             return {
                 "source": "gemini_plus_serp_live",
-                "data": active_record
+                "data": self._format_for_api(active_record) # 👈 Cleaned!
             }
-
+        
         except Exception as db_fault:
             db.rollback()
             return {"error": f"Transaction rolled back. Details: {db_fault}"}
@@ -140,11 +161,4 @@ if __name__ == "__main__":
     result = ProductWorkflowManager().process_deep_dive(db, product_to_check)
     print(result)
     
-    print(result['data'].name)
-    print(result['data'].current_price_egp)
-    print(result['data'].links)
-    print(result['data'].sentiment_summary)
-    print(result['data'].pros)
-    print(result['data'].cons)
-    print(result['data'].image_url)
-    print(f"Embedding Vector Length: {len(result['data'].embedding)}")
+ 
