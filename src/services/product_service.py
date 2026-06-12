@@ -6,7 +6,7 @@ from src.models.product import ProductAnalysis
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
-from src.services.embedding_service import generate_embedding
+from src.services.embedding_service import VectorEmbedding
 
 class ProductWorkflowManager:
     def __init__(self):
@@ -14,6 +14,7 @@ class ProductWorkflowManager:
         self.link_fetcher = SerpLinkFetcher() # Mount our new search engine asset
         self.similarity_threshold = 0.4
         self.cache_expiration_hours = 24
+        self.embedding_generator = VectorEmbedding()
 
     def process_deep_dive(self, db: Session, user_query: str):
         print(f"🔍 Analyzing product discovery request for string: '{user_query}'")
@@ -67,7 +68,7 @@ class ProductWorkflowManager:
 
         # 2. Generate the mathematical vector
         print("🧠 Compiling semantic vector embedding for intent matching...")
-        product_vector = generate_embedding(rich_context)
+        product_vector = self.embedding_generator.generate_embedding(rich_context)
 
 
         try:
