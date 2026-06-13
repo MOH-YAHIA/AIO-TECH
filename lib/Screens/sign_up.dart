@@ -1,0 +1,269 @@
+import 'package:aio_tech/utils/app_colors.dart';
+import 'package:flutter/material.dart';
+import '../Widgets/auth_fields.dart';
+import '../services/auth_services.dart';
+import '../utils/validations.dart';
+
+class SignUp extends StatefulWidget {
+  const SignUp({super.key, required this.onSignUpSuccess});
+
+  final VoidCallback onSignUpSuccess;
+  @override
+  State<SignUp> createState() => _SignUpState();
+}
+
+class _SignUpState extends State<SignUp> {
+  final GlobalKey<FormState> _signUpFormKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  String? selectedGender;
+  int? selectedAge;
+  final List<int> ages = List.generate(93, (index) => index + 8);
+  bool _obscurePassword = true;
+
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+  String _error = '';
+
+  void _handleSignUp() async {
+    if (!_signUpFormKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+
+    final result = await _authService.register(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      age: selectedAge,
+      gender: selectedGender,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success']) {
+      widget.onSignUpSuccess();
+    } else {
+      setState(() {
+        _error = result['message'] ?? 'Signup failed. Please try again.';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 80),
+                const Text(
+                  "Signup",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                ),
+                const SizedBox(height: 60),
+                Form(
+                  key: _signUpFormKey,
+                  child: Column(
+                    spacing: 20,
+                    children: [
+                      AuthFields(
+                        controller: _nameController,
+                        validator: (value) => value == null || value.isEmpty ? "Name is required" : null,
+                        label: "Full Name",
+                        suffixIcon: const Icon(Icons.account_circle),
+                      ),
+                      AuthFields(
+                        controller: _emailController,
+                        validator: Validators.validateEmail,
+                        label: "Email",
+                        suffixIcon: const Icon(Icons.email),
+                      ),
+                      AuthFields(
+                        label: "Password",
+                        obscure: _obscurePassword,
+                        controller: _passwordController,
+                        validator: Validators.validatePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      AuthFields(
+                        label: "Confirm your Password",
+                        obscure: _obscurePassword,
+                        controller: _confirmPasswordController,
+                        validator: (value) {
+                          if (value != _passwordController.text) {
+                            return "Passwords do not match";
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(width: 3, color: Colors.black),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedGender,
+                                  hint: const Text(
+                                    "Gender",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Color(0x8E424040),
+                                    ),
+                                  ),
+                                  isExpanded: true,
+                                  items: const [
+                                    DropdownMenuItem(value: "Man", child: Text("Man")),
+                                    DropdownMenuItem(value: "Woman", child: Text("Woman")),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedGender = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(width: 3, color: Colors.black),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  value: selectedAge,
+                                  hint: const Text(
+                                    "Age",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Color(0x8E424040),
+                                    ),
+                                  ),
+                                  isExpanded: true,
+                                  items: ages.map((age) {
+                                    return DropdownMenuItem<int>(
+                                      value: age,
+                                      child: Text(age.toString()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedAge = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_error.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text(
+                            _error,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      _isLoading
+                          ? const CircularProgressIndicator(color: AppColors.buttonBackground)
+                          : SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _handleSignUp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.buttonBackground,
+                          ),
+                          child: const Text("Create Account", style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
