@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
@@ -9,95 +9,130 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # =====================================================================
-# 🏗️ STEP 1: Define the Strict Structural Invariants using Pydantic
+# 🏗️ STEP 1: Define the Streamlined Structural Invariants 
 # =====================================================================
-
-class PriceHistoryPoint(BaseModel):
-    month: str = Field(description="The month name, e.g., 'January', 'February'")
-    price: float = Field(description="The average market price in EGP for this month")
 
 class ProductAnalysisSchema(BaseModel):
-    name: str = Field(description="The exact, standardized official product name (e.g., 'Samsung Galaxy S24 Ultra 256GB')")
-    rating: Optional[float] = Field(description="Calculated average rating out of 5.0 based on market and social reviews")
-    current_price_egp: float = Field(description="The current lowest active retail price found in Egypt in EGP")
-    lowest_ever_price: float = Field(description="The historical lowest recorded price for this item in Egypt in EGP")
-    price_history_6m: List[PriceHistoryPoint] = Field(description="Exactly 6 chronologically ordered monthly data points representing price changes over the last 6 months")
-    pros: List[str] = Field(description="List of top 3-5 distinct technical or value advantages extracted from user reviews")
-    cons: List[str] = Field(description="List of top 3-5 distinct limitations or user complaints extracted from user reviews")
-    sentiment_summary: str = Field(description="A concise 2-3 sentence technical synthesis of general consumer sentiment across social networks like Reddit or Facebook groups in Egypt")
+    name: str = Field(
+        description="The exact, standardized official product name including specific storage/variant formatting (e.g., 'Samsung Galaxy S24 Ultra 256GB')."
+    )
+    description: str = Field(
+        description="A robust, highly accurate technical summary of the product's primary specifications, key chipsets, hardware metrics, and primary intended market use-case."
+    )
+    current_price_egp: float = Field(
+        description="High-confidence current active retail price in Egyptian Pounds (EGP). Must represent a realistic, verifiable price from an established local vendor, skipping obvious marketplace outliers, used units, or accessory pricing scams."
+    )
+    pros: List[str] = Field(
+        description="List of top 3-5 hyper-specific technical or value advantages explicitly voiced by actual consumers and reviewers within the local Egyptian ecosystem."
+    )
+    cons: List[str] = Field(
+        description="List of top 3-5 unvarnished technical drawbacks, localized issues (such as local warranty service complaints, heat performance in summer climates, or lack of regional features) cited directly by Egyptian users."
+    )
+    sentiment_summary: str = Field(
+        description="A highly accurate 2-3 sentence technical synthesis of general consumer sentiment across organic local social network layers like Reddit (r/Egypt), Facebook community groups, and specialized tech forums."
+    )
 
 
 # =====================================================================
-# 🧠 STEP 2: Implement the Search-Grounded Analyzer Class
+# 🧠 STEP 2: Implement the Streamlined Two-Stage Analyzer
 # =====================================================================
 
 class DeepDiveAnalyzer:
     def __init__(self):
-        # Read API key securely from environment
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("❌ GEMINI_API_KEY is missing from environment variables.")
         
-        # Initialize the modern Google GenAI Client
         self.client = genai.Client(api_key=api_key)
-        # Using 2.5 Flash for optimal performance-to-latency ratio
         self.model_name = "gemini-2.5-flash-lite"
 
     def analyze_product(self, product_query: str) -> dict:
         """
-        Executes Google Search Grounding to aggregate live data from Egyptian 
-        e-commerce networks and enforces a rigid Pydantic JSON structure response.
+        Executes a high-fidelity two-stage pipeline:
+        Stage 1: Gathers unvarnished localized consumer data and live retail pricing using Google Search Grounding.
+        Stage 2: Compiles the generated textual insight into a rigid, structured JSON payload.
         """
-        system_instruction = (
-            "You are an expert market research agent specialized in the Egyptian e-commerce sector. "
-            "Your objective is to find real-time active pricing, a realistic 6-month price history, "
-            "and authentic consumer sentiment for the queried item using Google Search. "
-            "You must prioritize local platforms such as Amazon.eg, Noon.com (Egypt), B.TECH, and localized social channels. "
-            "All pricing metrics MUST be calculated and represented in Egyptian Pounds (EGP)."
+        # -----------------------------------------------------------------
+        # STAGE 1: High-Intensity Search Grounding (Targeting Egypt & Social Layers)
+        # -----------------------------------------------------------------
+        print(f"[+] Stage 1: Executing Grounded Market Search for '{product_query}'...")
+        
+        search_prompt = (
+            f"Perform an exhaustive, deep-dive market evaluation and organic user sentiment analysis for the product: '{product_query}' inside Egypt.\n\n"
+            "CRITICAL SEARCH BOUNDARIES & MANDATES:\n"
+            "1. HIGH-CONFIDENCE DOMESTIC PRICING: Find the exact current active market price for a brand-new retail unit in Egypt. "
+            "Isolate values from major localized merchants (Amazon.eg, Noon.com Egypt, B.TECH, Rayasg, 2B). Verify that the price is "
+            "specifically for the real item variant in EGP—not a random accessory, used/refurbished unit, or obvious pricing error.\n"
+            "2. SOCIAL COMMUNITY SCRAPING: Actively cross-reference organic web sentiment layers. Scrutinize specific community networks "
+            "by evaluating entries corresponding to 'site:reddit.com/r/Egypt', localized tech subreddits, Facebook groups, and Egyptian hardware forums. "
+            "Extract unvarnished, raw feedback detailing distinct pros and real-world cons (e.g., local agent/warranty problems, heating under local climate "
+            "conditions, charging limitations during load-shedding, or extreme currency-driven price-to-performance gaps).\n"
+            "3. DETAILED SPECIFICATION BLURB: Identify the official underlying hardware configuration (chipset, screen, primary engineering selling points) "
+            "to construct a strong technical overview statement.\n\n"
+            "Compile all validated data points into a thorough, extensive research summary text block focusing strictly on Price, Description, Pros, Cons, and Social Sentiment."
         )
 
-        user_prompt = f"Perform a comprehensive market research and deep dive sentiment analysis for the product: '{product_query}'"
-
         try:
-            # Execute inference with strict schema constraints
-            response = self.client.models.generate_content(
+            search_response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=user_prompt,
+                contents=search_prompt,
                 config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    # ⚡ CRITICAL: Enable Google Search Grounding for live data lookup
-                  #  tools=[types.Tool(google_search=types.GoogleSearch())],
-                    # 🛡️ CRITICAL: Force Gemini to output JSON conforming exactly to our Pydantic model
-                    response_mime_type="application/json",
-                    response_schema=ProductAnalysisSchema,
-                    temperature=0.2, # Low temperature to prevent hallucination of price numbers
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    temperature=0.2,  
                 ),
             )
+            raw_research_text = search_response.text
+            
+        except Exception as e:
+            print(f"[-] Stage 1 (Search) Failure: {e}")
+            return {"error": f"Search grounding failed: {str(e)}"}
 
-            # Gemini SDK handles the parsing directly. response.text is guaranteed 
-            # to validate perfectly against ProductAnalysisSchema.
-            import json
-            validated_json = json.loads(response.text)
+        # -----------------------------------------------------------------
+        # STAGE 2: Parse and Restructure into Strict JSON Schema
+        # -----------------------------------------------------------------
+        print("[+] Stage 2: Compiling raw text matrix into deterministic JSON Schema...")
+        
+        structuring_instruction = (
+            "You are an elite automated data formatting engine. Your absolute purpose is to parse the provided raw "
+            "Egyptian market research summary and structure it seamlessly to fit the strict JSON schema provided.\n\n"
+            "RIGID EXECUTION RULES:\n"
+            "- 'current_price_egp' MUST be extracted solely as a pure numerical float value (e.g., 42500.0). Completely strip any currency symbols or commas.\n"
+            "- 'pros' and 'cons' arrays must contain distinct, concrete sentences highlighting physical user experiences, not vague generic words.\n"
+            "- The entire response output must contain absolutely NO markdown blocks, NO backticks (```json), and NO extra conversational text. "
+            "Generate raw, structurally valid JSON matching the schema parameters perfectly."
+        )
+
+        try:
+            structuring_response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=f"Raw Research Data:\n{raw_research_text}",
+                config=types.GenerateContentConfig(
+                    system_instruction=structuring_instruction,
+                    response_mime_type="application/json",
+                    response_schema=ProductAnalysisSchema,
+                    temperature=0.1,  
+                ),
+            )
+            
+            validated_json = json.loads(structuring_response.text)
             return validated_json
 
         except Exception as e:
-            print(f"❌ Gemini Service Pipeline Failure: {e}")
-            return {"error": f"Failed to execute structured AI generation. Detail: {str(e)}"}
-        
+            print(f"[-] Stage 2 (Structuring) Failure: {e}")
+            return {"error": f"JSON structural compilation failed: {str(e)}"}
+
 
 # --- EXECUTION ---
 if __name__ == "__main__":
     analyzer = DeepDiveAnalyzer()
     
-    # Example: Deep dive into a popular Egyptian tech item
     product_to_check = "Samsung Galaxy S24 Ultra 256GB"
-    
     report = analyzer.analyze_product(product_to_check)
     
-    # Save the detailed report to your data folder
-    output_path = "data/product_deep_dive_test2222.json"
+    os.makedirs("data", exist_ok=True)
+    output_path = "data/product_deep_dive_clean.json"
     
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=4, ensure_ascii=False)
 
-    print(f"Deep-dive complete. Report saved to: {output_path}")
+    print(f"\n[+] Pipeline Complete. Clean JSON report saved to: {output_path}")

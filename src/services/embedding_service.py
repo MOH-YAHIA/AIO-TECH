@@ -14,10 +14,8 @@ class VectorEmbedding:
         
         try:
             self.client = genai.Client(api_key=api_key)
-            print("✅ Successfully initialized GenAI Client for embedding generation.")
         except Exception as e:
-            print(f"❌ Failed to initialize GenAI Client: {e}")
-            self.client = None
+            raise ValueError(f"❌ Failed to initialize Gemini client: {e}")
 
     def generate_embedding(self,text_payload: str) -> list[float]:
         """
@@ -36,8 +34,8 @@ class VectorEmbedding:
             return np.array(response)
             
         except Exception as e:
-            print(f"❌ Embedding Generation Error: {e}")
-            return []
+            raise ValueError    (f"❌ Embedding Generation Error: {e}")
+   
         
 if __name__ == "__main__":
     sample_text = "This is a sample product description to generate an embedding for."

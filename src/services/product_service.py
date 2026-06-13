@@ -1,48 +1,45 @@
-# Inside src/services/product_service.py
-# (Make sure to import your new SerpLinkFetcher at the top)
-from src.services.serp_service import SerpLinkFetcher
-from src.services.gemini_service import DeepDiveAnalyzer
-from src.models.product import ProductAnalysis
+import json
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
+
+from src.models.product import ProductAnalysis
+from src.services.gemini_service import DeepDiveAnalyzer
 from src.services.embedding_service import VectorEmbedding
+from src.services.serp_service import GlobalProductDetailsExtractor
 
 class ProductWorkflowManager:
     def __init__(self):
         self.ai_analyzer = DeepDiveAnalyzer()
-        self.link_fetcher = SerpLinkFetcher() # Mount our new search engine asset
+        self.embedding_generator = VectorEmbedding()
+        self.serp_extractor = GlobalProductDetailsExtractor()
         self.similarity_threshold = 0.4
         self.cache_expiration_hours = 24
-        self.embedding_generator = VectorEmbedding()
+
     def _format_for_api(self, product: ProductAnalysis) -> dict:
-        """
-        Strips away internal SQLAlchemy state and the heavy 768-D vector,
-        returning only the clean data required by the frontend UI.
-        """
+        """Returns the clean, flat JSON structure for the frontend UI."""
         return {
             "id": product.id,
             "name": product.name,
-            "rating": product.rating,
+            "description": product.description,
             "current_price_egp": product.current_price_egp,
-            "lowest_ever_price": product.lowest_ever_price,
-            "price_history_6m": product.price_history_6m,
             "pros": product.pros,
             "cons": product.cons,
             "sentiment_summary": product.sentiment_summary,
-            "links": product.links,
-            "lowest_price_link": product.lowest_price_link,
+            
+            # Flattened SerpApi Data
             "image_url": product.image_url,
-            # Convert datetime to string safely
+            "global_rating": product.global_rating,
+            "global_usd_price": product.global_usd_price,
+            
             "last_ai_update": product.last_ai_update.isoformat() if product.last_ai_update else None
         }
-    
+
     def process_deep_dive(self, db: Session, user_query: str):
-        print(f"🔍 Analyzing product discovery request for string: '{user_query}'")
+        print(f"Analyzing product discovery request for: '{user_query}'")
         
-        # 1. Compute Trigram string matching score against names stored in database
+        # 1. Cache Check
         similarity_score = func.similarity(ProductAnalysis.name, user_query)
-        
         cached_product = (
             db.query(ProductAnalysis)
             .filter(similarity_score > self.similarity_threshold)
@@ -50,115 +47,122 @@ class ProductWorkflowManager:
             .first()
         )
 
-        # 2. Check Cache Validity Conditions
         if cached_product:
-            time_since_update = datetime.now() - cached_product.last_ai_update
-            is_fresh = time_since_update < timedelta(hours=self.cache_expiration_hours)
-            
+            is_fresh = (datetime.now() - cached_product.last_ai_update) < timedelta(hours=self.cache_expiration_hours)
             if is_fresh:
-                print("🎯 Cache Hit! Serving fresh data immediately from PostgreSQL.")
-                return {
-                    "source": "database_cache",
-                    "data": self._format_for_api(cached_product) # 👈 Cleaned!
-                }
-            print("⏳ Cache Stale! The data is older than 24 hours. Triggering refresh...")
+                print("Cache Hit! Serving fresh data immediately.")
+                return {"source": "database_cache", "data": self._format_for_api(cached_product)}
 
-        # --- CACHE MISS PATH ---
-        print("⚡ Cache Miss. Invoking Gemini for structured analysis details...")
-        ai_data = self.ai_analyzer.analyze_product(user_query)
+        # -----------------------------------------------------------------
+        # PHASE 1: Semantic Extraction (Gemini)
+        # -----------------------------------------------------------------
+        print("⚡ Cache Miss. Invoking Gemini Stage 1...")
+        gemini_data = self.ai_analyzer.analyze_product(user_query)
+        if "error" in gemini_data:
+            raise ValueError(f"Gemini analysis failed: {gemini_data['error']}")
+
+        standardized_name = gemini_data.get("name", user_query)
+
+        # -----------------------------------------------------------------
+        # PHASE 2: Deterministic Extraction (SerpApi)
+        # -----------------------------------------------------------------
+        print(f"Triggering SerpApi Shopping Light for: '{standardized_name}'...")
+        serp_data = json.loads(self.serp_extractor.get_product_details_json(standardized_name))
         
-        if "error" in ai_data:
-            return {"error": "Failed to analyze product constraints using Gemini."}
+        # Default flat values
+        extracted_image = None
+        extracted_rating = None
+        extracted_usd_price = None
 
-        # 🚀 THE NEW STEP: Extract the official product name and query SerpApi for real URLs
-        standardized_name = ai_data.get("name", user_query)
-        print(f"🌐 Triggering SerpApi live indexing for: '{standardized_name}'...")
-        serp_payload = self.link_fetcher.discover_egyptian_market_links(standardized_name)
-        real_market_links = serp_payload["links"]
-        discovered_image = serp_payload["image_url"] # 👈 Captured!
+        if "error" in serp_data:
+            raise ValueError(f"SerpApi extraction failed: {serp_data['error']}")
+
+        img = serp_data.get("image_url")
+        if img and img != "No image found":
+            extracted_image = img
+
+        rating = serp_data.get("global_rating")
+        if rating and rating != "No rating found":
+            extracted_rating = float(rating)
+
+        usd_price = serp_data.get("price_usd")
+        if usd_price and usd_price != "No price found":
+            extracted_usd_price = str(usd_price)
+
+        # -----------------------------------------------------------------
+        # PHASE 3: Vector Generation
+        # -----------------------------------------------------------------
+        rich_context = (
+            f"Product: {standardized_name}. "
+            f"Description: {gemini_data.get('description', '')}. "
+            f"Summary: {gemini_data.get('sentiment_summary', '')}. "
+            f"Pros: {', '.join(gemini_data.get('pros', []))}. "
+            f"Cons: {', '.join(gemini_data.get('cons', []))}."
+        )
         
-        
-        # Build clean link arrays filtering out any stores that weren't found
-        verified_url_list = [url for url in real_market_links.values() if url is not None]
+        print("Compiling semantic vector embedding...")
+        raw_vector = self.embedding_generator.generate_embedding(rich_context)
+        while isinstance(raw_vector, list) and len(raw_vector) > 0 and isinstance(raw_vector[0], list):
+            raw_vector = raw_vector[0]
+        clean_1d_vector = [float(x) for x in raw_vector]
 
-        # 1. Create a dense context string combining all semantic value
-        rich_context = f"Product: {standardized_name}. "
-        rich_context += f"Summary: {ai_data.get('sentiment_summary', '')}. "
-        rich_context += f"Pros: {', '.join(ai_data.get('pros', []))}. "
-        rich_context += f"Cons: {', '.join(ai_data.get('cons', []))}."
-
-        # 2. Generate the mathematical vector
-        print("🧠 Compiling semantic vector embedding for intent matching...")
-        product_vector = self.embedding_generator.generate_embedding(rich_context)
-
-
+        # -----------------------------------------------------------------
+        # PHASE 4: ACID Database Commit
+        # -----------------------------------------------------------------
         try:
             if cached_product:
-                print(f"🔄 Hydrating stale record for ID: {cached_product.id}")
-                cached_product.current_price_egp = float(ai_data.get("current_price_egp", 0))
-                cached_product.lowest_ever_price = float(ai_data.get("lowest_ever_price", 0))
-                cached_product.price_history_6m = ai_data.get("price_history_6m", [])
-                cached_product.pros = ai_data.get("pros", [])
-                cached_product.cons = ai_data.get("cons", [])
-                cached_product.sentiment_summary = ai_data.get("sentiment_summary", "")
+                cached_product.current_price_egp = gemini_data.get("current_price_egp", 0.0)
+                cached_product.description = gemini_data.get("description", "")
+                cached_product.pros = gemini_data.get("pros", [])
+                cached_product.cons = gemini_data.get("cons", [])
+                cached_product.sentiment_summary = gemini_data.get("sentiment_summary", "")
+                cached_product.embedding = clean_1d_vector
                 
-                # Overwrite database properties using SerpApi's real findings
-                cached_product.links = verified_url_list
-                cached_product.lowest_price_link = real_market_links.get("amazon") or real_market_links.get("noon")
+                # Flat updates
+                cached_product.image_url = extracted_image
+                cached_product.global_rating = extracted_rating
+                cached_product.global_usd_price = extracted_usd_price
+                
                 cached_product.last_ai_update = datetime.now()
-                cached_product.image_url = discovered_image
-                cached_product.embedding = product_vector
-
                 db.commit()
                 db.refresh(cached_product)
                 active_record = cached_product
+                
             else:
-                # Store a brand new product entry
                 new_product = ProductAnalysis(
                     name=standardized_name,
-                    rating=float(ai_data.get("rating", 0.0)) if ai_data.get("rating") else None,
-                    current_price_egp=float(ai_data.get("current_price_egp", 0)),
-                    lowest_ever_price=float(ai_data.get("lowest_ever_price", 0)),
-                    price_history_6m=ai_data.get("price_history_6m", []),
-                    pros=ai_data.get("pros", []),
-                    cons=ai_data.get("cons", []),
-                    sentiment_summary=ai_data.get("sentiment_summary", ""),
+                    description=gemini_data.get("description", ""),
+                    current_price_egp=gemini_data.get("current_price_egp", 0.0),
+                    pros=gemini_data.get("pros", []),
+                    cons=gemini_data.get("cons", []),
+                    sentiment_summary=gemini_data.get("sentiment_summary", ""),
+                    embedding=clean_1d_vector,
                     
-                    # Injecting SerpApi verified arrays
-                    links=verified_url_list,
-                    image_url=discovered_image,
-                    lowest_price_link=real_market_links.get("amazon") or real_market_links.get("noon"),
-                    embedding=product_vector
+                    # Flat Inserts
+                    image_url=extracted_image,
+                    global_rating=extracted_rating,
+                    global_usd_price=extracted_usd_price,
+                    last_ai_update = datetime.now()
                 )
                 db.add(new_product)
                 db.commit()
                 db.refresh(new_product)
                 active_record = new_product
                 
-            return {
-                "source": "gemini_plus_serp_live",
-                "data": self._format_for_api(active_record) # 👈 Cleaned!
-            }
-        
+            return {"source": "gemini_plus_serp_live", "data": self._format_for_api(active_record)}
+
         except Exception as db_fault:
             db.rollback()
-            return {"error": f"Transaction rolled back. Details: {db_fault}"}
+            raise ValueError(f"Database operation failed: {str(db_fault)}")
         
-# --- TEST HARNESS ---
 if __name__ == "__main__":
-    # This block is for quick local testing of the entire workflow without needing to run the FastAPI server
-    from src.core.database import SessionLocal, engine
-    from src.models.product import Base
+    from src.core.database import SessionLocal
+    db_session = SessionLocal()
     
-    # Ensure tables are created
-    Base.metadata.create_all(bind=engine)
+    manager = ProductWorkflowManager()
+    result = manager.process_deep_dive(db_session, "samsung galaxy s24 ultra 256gb")
     
-    # Create a new database session
-    db = SessionLocal()
+    print("---saving ouput to data/final_output.json---")
+    with open("data/final_output.json", "w") as f:
+        json.dump(result, f, indent=4)
     
-    # Example product query for testing
-    product_to_check = "Apple iPhone 14 Pro Max"
-    result = ProductWorkflowManager().process_deep_dive(db, product_to_check)
-    print(result)
-    
- 

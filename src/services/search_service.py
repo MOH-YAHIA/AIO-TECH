@@ -12,13 +12,13 @@ class SearchWorkflowManager:
             Takes a raw user description (e.g., 'A laptop for a CS student doing ML') 
             and calculates Cosine Distance against all stored product embeddings.
             """
-            print(f"🎯 Calculating semantic proximity for intent: '{user_intent}'")
+            print(f"Calculating semantic proximity for intent: '{user_intent}'")
             
             # 1. Convert the user's messy request into a vector
             intent_vector = self.embedding_generator.generate_embedding(user_intent)
             
             if not intent_vector.any():
-                return {"error": "Failed to map user intent."}
+                raise ValueError("Failed to map user intent.")
 
             # 2. Query PostgreSQL to find the nearest mathematical neighbors
             # The <=> operator calculates Cosine Distance (closer to 0 is better)
@@ -34,13 +34,23 @@ class SearchWorkflowManager:
             recommendations = []
             for product in nearest_products:
                 recommendations.append({
-                    "name": product.name,
-                    "price": product.current_price_egp,
-                    "image": product.image_url,
-                    "links": product.links,
-                    "summary": product.sentiment_summary
-                })
-
+                        "id": product.id,
+                        "name": product.name,
+                        "description": product.description,
+                        "current_price_egp": product.current_price_egp,
+                        "pros": product.pros,
+                        "cons": product.cons,
+                        "sentiment_summary": product.sentiment_summary,
+                        
+                        # Flattened SerpApi Data
+                        "image_url": product.image_url,
+                        "global_rating": product.global_rating,
+                        "global_usd_price": product.global_usd_price,
+                        
+                        "last_ai_update": product.last_ai_update.isoformat() if product.last_ai_update else None
+                    }
+                )
+                
             return recommendations
 
 if __name__ == "__main__":
