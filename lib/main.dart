@@ -8,6 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'Screens/home_screen.dart';
 import '../services/auth_services.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -83,7 +84,11 @@ class _MainWrapperState extends State<MainWrapper> {
     HomeScreen(),
     WatchList(),
     Dashboard(),
-    Profile(),
+    Profile(
+      onBackPressed: () {
+        onTap(2);
+      },
+    ),
   ];
 
   void onTap(int index) {
@@ -97,43 +102,40 @@ class _MainWrapperState extends State<MainWrapper> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final bool isAuthScreen = _currentIndex == 0 || _currentIndex == 1;
-
+    final bool isAuthScreen =
+        _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 5;
     return Scaffold(
       appBar: isAuthScreen
           ? null
           : AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: <Widget>[
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.account_circle),
-            iconSize: 40,
-          ),
-        ],
-      ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      drawer: isAuthScreen ? null : DrawerDesign(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          Navigator.pop(context);
-          if (index == 0) {
-            _authService.logout();
-          }
-
-          onTap(index);
-        },
-      ),
+              backgroundColor: Colors.white,
+              elevation: 0,
+              actions: <Widget>[
+                IconButton(
+                  onPressed: () {
+                    onTap(5);
+                  },
+                  icon: const Icon(Icons.account_circle),
+                  iconSize: 40,
+                ),
+              ],
+            ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
+      drawer: isAuthScreen
+          ? null
+          : DrawerDesign(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                Navigator.pop(context);
+                if (index == 0) {
+                  _authService.logout();
+                }
+                onTap(index);
+              },
+            ),
     );
   }
 }
