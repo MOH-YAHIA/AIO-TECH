@@ -6,8 +6,9 @@ class DrawerDesign extends StatelessWidget {
 
   final Function(int) onDestinationSelected;
   final int selectedIndex;
+  final AuthService _authService = AuthService();
 
-  const DrawerDesign({
+   DrawerDesign({
     super.key,
     required this.onDestinationSelected,
     required this.selectedIndex,
@@ -144,13 +145,28 @@ class DrawerDesign extends StatelessWidget {
                 color: AppColors.iconColor,
                 size: 40,
               ),
-              title: Text(
-                "UserName",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
+              title: FutureBuilder<String?>(
+                future: _authService.getFullName(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Text(
+                      "Loading...",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    );
+                  }
+                  return Text(
+                    snapshot.data ?? "Guest",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
               subtitle: Text(
                 "Free plan",

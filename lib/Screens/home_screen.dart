@@ -42,7 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 60),
-            const HomeSearch(),
+            const HomeSearch(searchHint: "Device 1"),
+            const SizedBox(height: 60),
+            const HomeSearch(searchHint: "Device 2"),
             const SizedBox(height: 40),
             const Row(
               spacing: 10,

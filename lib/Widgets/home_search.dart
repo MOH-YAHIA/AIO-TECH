@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HomeSearch extends StatelessWidget {
-  const HomeSearch({super.key});
+  final String searchHint;
+  const HomeSearch({super.key, required this.searchHint});
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +23,10 @@ class HomeSearch extends StatelessWidget {
           maxLines: null,
           textAlign: TextAlign.center,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(vertical: 40,),
+            contentPadding: const EdgeInsets.symmetric(vertical: 20,),
             filled: true,
             fillColor: Colors.white,
-            hintText: "Describe What you need...",
+            hintText: searchHint,
             hintStyle: const TextStyle(
               color: Color(0x8E424040),
               fontWeight: FontWeight.bold,
@@ -43,12 +44,6 @@ class HomeSearch extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
               borderSide: const BorderSide(width: 3, color: Colors.black),
             ),
-            suffixIcon:  IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.send),
-                iconSize: 40,
-                color: const Color(0xFF3E5966),
-              ),
           ),
         ),
       ),
