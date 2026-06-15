@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class HomeSearch extends StatelessWidget {
   final String searchHint;
-  const HomeSearch({super.key, required this.searchHint});
+  final TextEditingController controller;
+  const HomeSearch({super.key, required this.searchHint,required this.controller, });
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +21,7 @@ class HomeSearch extends StatelessWidget {
           ],
         ),
         child: TextFormField(
+          controller: controller,
           maxLines: null,
           textAlign: TextAlign.center,
           decoration: InputDecoration(
