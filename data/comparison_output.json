@@ -1,0 +1,100 @@
+{
+    "products": {
+        "product_a": {
+            "id": 2,
+            "name": "iPhone 14 Pro Max",
+            "description": "The iPhone 14 Pro Max is a flagship smartphone featuring a 6.7-inch Super Retina XDR display with ProMotion technology (up to 120Hz adaptive refresh rate). It is powered by the Apple A16 Bionic chip, delivering high performance for demanding tasks. The device includes a 48MP main camera system, ultra-wide, and telephoto lenses, supporting 4K Dolby Vision recording. It offers storage options from 128GB to 1TB and has a 4323 mAh battery with fast and wireless charging support. The build consists of a Ceramic Shield front, glass back, and stainless steel frame, with IP68 dust and water resistance.",
+            "current_price_egp": 40999.0,
+            "pros": [
+                "The 6.7-inch Super Retina XDR display provides vibrant colors and a smooth 120Hz refresh rate, excellent for media and gaming.",
+                "The A16 Bionic chip ensures seamless multitasking and handles demanding applications and high-end gaming without issue.",
+                "The 48MP main camera system captures outstanding photos and videos, even in low light, with advanced features like Cinematic mode.",
+                "The device's build, featuring Ceramic Shield and stainless steel with IP68 rating, offers a premium and durable feel.",
+                "The 4323 mAh battery generally provides sufficient power for a full day of usage for most users."
+            ],
+            "cons": [
+                "The high price point of the iPhone 14 Pro Max is a significant barrier for many consumers in Egypt.",
+                "The Lightning port is slower for data transfer compared to USB-C and is becoming outdated.",
+                "Some users find the device to be noticeably heavy, which can be uncomfortable during extended use.",
+                "Repair costs for the iPhone 14 Pro Max, especially for screen or internal components, are very expensive in Egypt.",
+                "Potential activation challenges with eSIM technology for users purchasing devices abroad, as local carrier support is still developing."
+            ],
+            "sentiment_summary": "Egyptian consumers generally praise the iPhone 14 Pro Max for its exceptional camera, display, and performance. However, the high cost of the device and its repairs, exacerbated by currency fluctuations and import duties, are significant concerns. Discussions often revolve around finding the best local retailers or considering purchases abroad, with some users noting the innovative 'Dynamic Island' feature while also expressing caution about eSIM compatibility and import fees.",
+            "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRr7WGWCruy3iYPCdC7iAz0_-AubfexfIvSgCjyh1AHTxgNoH50bhnKUqXL7O0uf9WpkXSF1_EWWDA3UI4U3Pyfg_xB06-k1o9qzSncLSR96ndxxUDpteVmgQ",
+            "global_rating": 4.4,
+            "global_usd_price": "469.0",
+            "last_ai_update": "2026-06-13T15:49:11.476482"
+        },
+        "product_b": {
+            "id": 1,
+            "name": "Samsung Galaxy S24 Ultra 256GB",
+            "description": "The Samsung Galaxy S24 Ultra 256GB is a flagship smartphone featuring a 6.8-inch QHD+ Dynamic AMOLED 2X display with a 120Hz adaptive refresh rate. It is powered by the Qualcomm Snapdragon 8 Gen 3 for Galaxy chipset with 12GB of RAM. The device includes a versatile quad-camera system headlined by a 200MP main sensor, a 5000 mAh battery with 45W wired charging, a titanium frame, Gorilla Glass Armor, and an IP68 rating. It runs Android 14 with One UI 6.1 and includes the integrated S Pen, targeting power users and photography enthusiasts.",
+            "current_price_egp": 72000.0,
+            "pros": [
+                "The 6.8-inch Dynamic AMOLED 2X display offers stunning visuals with high brightness and excellent anti-reflective properties.",
+                "The Snapdragon 8 Gen 3 for Galaxy chipset ensures top-tier performance for demanding tasks like gaming and multitasking.",
+                "The 200MP main camera, combined with advanced telephoto and ultrawide lenses, captures high-quality photos and videos with impressive zoom.",
+                "The integrated S Pen provides enhanced productivity for note-taking and creative applications.",
+                "The premium build with a titanium frame, Gorilla Glass Armor, and IP68 rating offers excellent durability."
+            ],
+            "cons": [
+                "The high price point is a significant barrier for many consumers in Egypt due to currency fluctuations.",
+                "Intensive use can lead to faster battery drain, potentially requiring frequent charging.",
+                "The absence of a microSD card slot limits users to the internal 256GB storage.",
+                "Potential for performance throttling or discomfort during prolonged heavy usage in Egypt's extreme heat.",
+                "Concerns regarding local warranty support and after-sales service for high-end electronics in Egypt."
+            ],
+            "sentiment_summary": "Egyptian consumers generally appreciate the S24 Ultra's advanced technology and performance, but the exorbitant price is the most frequently cited concern, often described as a significant barrier. While storage capacity is discussed, with some questioning 256GB sufficiency, the high cost remains the dominant factor influencing overall market perception and purchase decisions.",
+            "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTWO86FylxszWXsx_58JiNMt0BBha2ykmp-7GaC8OrX_B-wOhCL3cpAuPzH7_W0Ql9Xw_blKA4qY1XRyKQEM30cE-8yyfEH",
+            "global_rating": 4.7,
+            "global_usd_price": "549.99",
+            "last_ai_update": "2026-06-13T15:28:02.156641"
+        }
+    },
+    "ai_comparison": {
+        "overall_winner": "iPhone 14 Pro Max",
+        "executive_summary": "The iPhone 14 Pro Max offers a compelling package of performance and camera capabilities at a significantly lower price point in Egypt (40,999 EGP) compared to the Samsung Galaxy S24 Ultra (72,000 EGP). While the S24 Ultra boasts higher megapixel counts and the S Pen, the iPhone provides a more accessible entry into flagship technology for Egyptian consumers.",
+        "buy_product_a_if": [
+            "You prioritize a strong balance of premium features and a more attainable price in the Egyptian market.",
+            "You are invested in the Apple ecosystem and prefer iOS for its user experience and app integration.",
+            "You want an excellent camera and powerful performance without the absolute top-tier price tag."
+        ],
+        "buy_product_b_if": [
+            "Budget is not a primary concern, and you are willing to pay a significant premium for the latest Android innovations and the S Pen.",
+            "You require the absolute highest megapixel count for photography and the unique productivity features of the S Pen.",
+            "You prefer the Android operating system and Samsung's specific hardware and software features."
+        ],
+        "feature_breakdowns": [
+            {
+                "category_name": "Price/Value",
+                "product_a_details": "Significantly more affordable in Egypt, offering strong flagship value for its price.",
+                "product_b_details": "Extremely high price point in Egypt, making it a luxury purchase with questionable value for many.",
+                "category_winner": "iPhone 14 Pro Max"
+            },
+            {
+                "category_name": "Performance",
+                "product_a_details": "A16 Bionic chip delivers exceptional speed and seamless multitasking for all applications.",
+                "product_b_details": "Snapdragon 8 Gen 3 for Galaxy provides top-tier performance, capable of handling the most demanding tasks.",
+                "category_winner": "Tie"
+            },
+            {
+                "category_name": "Camera System",
+                "product_a_details": "Excellent 48MP main sensor captures outstanding photos and videos with advanced features.",
+                "product_b_details": "Impressive 200MP main sensor offers higher resolution and advanced zoom capabilities.",
+                "category_winner": "Samsung Galaxy S24 Ultra 256GB"
+            },
+            {
+                "category_name": "Display",
+                "product_a_details": "6.7-inch Super Retina XDR display with ProMotion offers vibrant colors and smooth visuals.",
+                "product_b_details": "6.8-inch QHD+ Dynamic AMOLED 2X display provides stunning visuals with high brightness and anti-reflective properties.",
+                "category_winner": "Tie"
+            },
+            {
+                "category_name": "Productivity & Features",
+                "product_a_details": "Offers a robust iOS experience with features like the Dynamic Island.",
+                "product_b_details": "Includes the integrated S Pen for enhanced note-taking and creative work, a unique selling proposition.",
+                "category_winner": "Samsung Galaxy S24 Ultra 256GB"
+            }
+        ]
+    }
+}

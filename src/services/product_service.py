@@ -14,7 +14,7 @@ class ProductWorkflowManager:
         self.embedding_generator = VectorEmbedding()
         self.serp_extractor = GlobalProductDetailsExtractor()
         self.similarity_threshold = 0.4
-        self.cache_expiration_hours = 24
+        self.cache_expiration_hours = 24*7  # 1 week
 
     def _format_for_api(self, product: ProductAnalysis) -> dict:
         """Returns the clean, flat JSON structure for the frontend UI."""
