@@ -74,6 +74,22 @@ class DrawerDesign extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(
+              Icons.balance,
+              color: AppColors.iconColor,
+            ),
+            title: const Text(
+              "Compare",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+            selected: selectedIndex == 5,
+            onTap: () => onDestinationSelected(5),
+          ),
+          ListTile(
+            leading: const Icon(
               Icons.favorite_border,
               color: AppColors.iconColor,
             ),
@@ -104,6 +120,7 @@ class DrawerDesign extends StatelessWidget {
             selected: selectedIndex == 4,
             onTap: () => onDestinationSelected(4),
           ),
+
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20),

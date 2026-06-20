@@ -1,3 +1,4 @@
+import 'package:aio_tech/Screens/compare.dart';
 import 'package:aio_tech/Screens/dashboard.dart';
 import 'package:aio_tech/Screens/login.dart';
 import 'package:aio_tech/Screens/profile.dart';
@@ -84,6 +85,7 @@ class _MainWrapperState extends State<MainWrapper> {
     HomeScreen(),
     WatchList(),
     Dashboard(),
+    Compare(),
     Profile(
       onBackPressed: () {
         onTap(2);
@@ -106,7 +108,7 @@ class _MainWrapperState extends State<MainWrapper> {
       );
     }
     final bool isAuthScreen =
-        _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 5;
+        _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 6;
     return Scaffold(
       appBar: isAuthScreen
           ? null
@@ -116,7 +118,7 @@ class _MainWrapperState extends State<MainWrapper> {
               actions: <Widget>[
                 IconButton(
                   onPressed: () {
-                    onTap(5);
+                    onTap(6);
                   },
                   icon: const Icon(Icons.account_circle),
                   iconSize: 40,
