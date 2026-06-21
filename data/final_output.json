@@ -3,26 +3,26 @@
     "data": {
         "id": 1,
         "name": "Samsung Galaxy S24 Ultra 256GB",
-        "description": "The Samsung Galaxy S24 Ultra 256GB is a flagship smartphone featuring a 6.8-inch QHD+ Dynamic AMOLED 2X display with a 120Hz adaptive refresh rate. It is powered by the Qualcomm Snapdragon 8 Gen 3 for Galaxy chipset with 12GB of RAM. The device includes a versatile quad-camera system headlined by a 200MP main sensor, a 5000 mAh battery with 45W wired charging, a titanium frame, Gorilla Glass Armor, and an IP68 rating. It runs Android 14 with One UI 6.1 and includes the integrated S Pen, targeting power users and photography enthusiasts.",
+        "description": "The Samsung Galaxy S24 Ultra is a flagship smartphone featuring a 6.8-inch Dynamic AMOLED 2X QHD+ display with a 120Hz refresh rate, powered by the Qualcomm Snapdragon 8 Gen 3 for Galaxy chipset, 12GB RAM, and 256GB storage. It boasts a 200MP quad-camera system, a 5000 mAh battery with 45W charging, a titanium frame, Gorilla Armor screen, and IP68 rating, running Android 14 with One UI.",
         "current_price_egp": 72000.0,
         "pros": [
-            "The 6.8-inch Dynamic AMOLED 2X display offers stunning visuals with high brightness and excellent anti-reflective properties.",
-            "The Snapdragon 8 Gen 3 for Galaxy chipset ensures top-tier performance for demanding tasks like gaming and multitasking.",
-            "The 200MP main camera, combined with advanced telephoto and ultrawide lenses, captures high-quality photos and videos with impressive zoom.",
-            "The integrated S Pen provides enhanced productivity for note-taking and creative applications.",
-            "The premium build with a titanium frame, Gorilla Glass Armor, and IP68 rating offers excellent durability."
+            "Users consistently praise the 'insanely fast' processor and excellent gaming performance.",
+            "The 6.8-inch Dynamic AMOLED 2X display is described as 'beautiful' and 'crisp', with the anti-reflective coating being a notable improvement.",
+            "The cameras are considered 'some of the best you can get on a phone', delivering 'better photos and videos'.",
+            "Battery life is reported as 'solid' and 'much better' than older models.",
+            "The inclusion of a titanium frame and Corning Gorilla Armor is highlighted for its durability and premium feel."
         ],
         "cons": [
-            "The high price point is a significant barrier for many consumers in Egypt due to currency fluctuations.",
-            "Intensive use can lead to faster battery drain, potentially requiring frequent charging.",
-            "The absence of a microSD card slot limits users to the internal 256GB storage.",
-            "Potential for performance throttling or discomfort during prolonged heavy usage in Egypt's extreme heat.",
-            "Concerns regarding local warranty support and after-sales service for high-end electronics in Egypt."
+            "Power users express frustration with the 'permission-based ecosystem' and locked bootloader, restricting deep system access and customizability.",
+            "One user reported the USB-C port becoming unreliable over time, with issues in car chargers.",
+            "Some users have experienced difficulties with the fingerprint sensor's responsiveness after applying screen protectors.",
+            "Some users have reported issues with the S24 Ultra's display, including inaccurate colors, graininess, and green lines.",
+            "While overall camera quality is high, some users noted that objects in motion can still appear blurry."
         ],
-        "sentiment_summary": "Egyptian consumers generally appreciate the S24 Ultra's advanced technology and performance, but the exorbitant price is the most frequently cited concern, often described as a significant barrier. While storage capacity is discussed, with some questioning 256GB sufficiency, the high cost remains the dominant factor influencing overall market perception and purchase decisions.",
-        "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTWO86FylxszWXsx_58JiNMt0BBha2ykmp-7GaC8OrX_B-wOhCL3cpAuPzH7_W0Ql9Xw_blKA4qY1XRyKQEM30cE-8yyfEH",
+        "sentiment_summary": "Egyptian users are generally satisfied with the S24 Ultra's performance, camera, and display, appreciating its premium hardware. However, a significant segment, particularly power users, expresses frustration with Samsung's restrictive software ecosystem, locked bootloader, and lack of customization. Isolated hardware issues like USB-C port unreliability and fingerprint sensor problems with screen protectors also detract from the experience for some.",
+        "image_url": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTE3r7NGGX2Yicy8g647p6peddYm8t5qS1SiG3Hxc3vvSvlvtEZ4owAODPVEBVmPrV30Y1ue03j0kGdS2delAqOi5OHEkPOkpA9h4rmXf5ejajBb_EjGT6rWg",
         "global_rating": 4.7,
-        "global_usd_price": "549.99",
-        "last_ai_update": "2026-06-13T15:28:02.156641"
+        "global_usd_price": "$649.97",
+        "last_ai_update": "2026-06-21T22:20:38.412732"
     }
 }
