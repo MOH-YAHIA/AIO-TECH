@@ -1,7 +1,8 @@
 import 'package:aio_tech/Widgets/home_search.dart';
+import 'package:aio_tech/Widgets/product_search_result.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-
+import '../services/product_service.dart';
 import '../Widgets/new_chat.dart';
 import '../utils/app_colors.dart';
 
@@ -15,11 +16,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _device1Controller = TextEditingController();
+  final ProductService _productService = ProductService(); // Initialize service
 
-  // Track if the user has triggered a search
   bool _hasSearched = false;
+  bool _isLoading = false; // Track API loading state
   String _lastQuery = "";
-
+  Map<String, dynamic>? _apiResult; // Store the JSON response
+  String _errorMessage = "";
 
   @override
   void initState() {
@@ -37,11 +40,32 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _performSearch() {
+  // Update this to accept the model from the HomeSearch dropdown
+  Future<void> _performSearch(String modelType) async {
     setState(() {
       _hasSearched = true;
+      _isLoading = true; // Start loading spinner
+      _errorMessage = "";
       _lastQuery = _device1Controller.text;
       _device1Controller.clear();
+    });
+
+    // Call the FastAPI endpoint
+    final result = await _productService.dispatchSearch(
+      query: _lastQuery,
+      serviceName: modelType,
+    );
+
+    setState(() {
+      _isLoading = false; // Stop loading spinner
+      if (result['success']) {
+        // Handles both 'product' and 'detailed' modes, regardless of how
+        // many payload/data wrapper levels the backend uses, and whether
+        // the result comes back as a single object or a list of matches.
+        _apiResult = ProductService.extractProductMap(result['data']);
+      } else {
+        _errorMessage = result['message'];
+      }
     });
   }
 
@@ -55,7 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Initial layout with big centered search bar
   Widget _buildInitialView() {
     return ListView(
       padding: const EdgeInsetsDirectional.all(10),
@@ -83,11 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 60),
+
         HomeSearch(
           showSendButton: true,
           searchHint: "Describe what you want",
           controller: _device1Controller,
-          onSearch: _performSearch,
+          onSearch: _performSearch, // This now passes the dropdown selection correctly
         ),
 
         const SizedBox(height: 40),
@@ -104,10 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
   Widget _buildResultsView() {
     return Column(
       children: [
-        // 1. Add the New Chat button at the top of the results view
         Padding(
           padding: const EdgeInsets.only(top: 10, right: 16),
           child: Align(
@@ -116,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 setState(() {
                   _hasSearched = false;
+                  _apiResult = null; // Clear previous results
                   _device1Controller.clear();
                 });
               },
@@ -146,16 +171,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                color: Colors.grey.shade200,
-                child: const Text("Product Result UI Goes Here"),
-              )
+
+              // Conditional Rendering based on API status
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_errorMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.red.shade50,
+                  child: Text("Error: $_errorMessage", style: const TextStyle(color: Colors.red)),
+                )
+              else if (_apiResult != null)
+                // Pass the real API data into your UI Widget!
+                  ProductSearchResult(data: _apiResult!)
             ],
           ),
         ),
 
-        // Footer Search Box
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -172,8 +204,9 @@ class _HomeScreenState extends State<HomeScreen> {
             showSendButton: true,
             searchHint: "Search again...",
             controller: _device1Controller,
-            isCompact: true, // Shrinks the height!
-            onSearch: _performSearch,
+            isCompact: true,
+            // Since there's no dropdown in compact mode, default it to 'detailed'
+            onSearch: (model) => _performSearch('detailed'),
           ),
         ),
       ],

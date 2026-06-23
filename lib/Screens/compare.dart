@@ -1,7 +1,8 @@
 import 'package:aio_tech/Widgets/home_search.dart';
+import 'package:aio_tech/Widgets/result_comparison_format.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-
+import '../services/product_service.dart';
 import '../Widgets/new_chat.dart';
 import '../utils/app_colors.dart';
 
@@ -14,14 +15,16 @@ class Compare extends StatefulWidget {
 
 class _CompareState extends State<Compare> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController _device1Controller = TextEditingController();
   final TextEditingController _device2Controller = TextEditingController();
+  final ProductService _productService = ProductService();
 
-  // Track if the comparison has started
   bool _hasCompared = false;
+  bool _isLoading = false;
   String _queryA = "";
   String _queryB = "";
+  Map<String, dynamic>? _compareResult;
+  String _errorMessage = "";
 
   @override
   void initState() {
@@ -41,11 +44,30 @@ class _CompareState extends State<Compare> {
     super.dispose();
   }
 
-  void _performComparison() {
+  // Make this async and call the FastAPI
+  Future<void> _performComparison() async {
     setState(() {
       _hasCompared = true;
+      _isLoading = true;
+      _errorMessage = "";
       _queryA = _device1Controller.text;
       _queryB = _device2Controller.text;
+    });
+
+    final result = await _productService.compareDevices(
+      productA: _queryA,
+      productB: _queryB,
+    );
+
+    setState(() {
+      _isLoading = false;
+      if (result['success']) {
+        // Finds the map containing 'ai_comparison' regardless of how many
+        // payload/data wrapper levels the backend uses.
+        _compareResult = ProductService.extractCompareMap(result['data']);
+      } else {
+        _errorMessage = result['message'];
+      }
     });
   }
 
@@ -73,9 +95,9 @@ class _CompareState extends State<Compare> {
           child: Icon(Icons.compare_arrows, color: Colors.white, size: 40),
         ),
         const SizedBox(height: 25),
-        Text(
+        const Text(
           "Device Comparison",
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             color: Color(0xFF2C3133),
@@ -128,6 +150,7 @@ class _CompareState extends State<Compare> {
               onPressed: () {
                 setState(() {
                   _hasCompared = false;
+                  _compareResult = null;
                   _device1Controller.clear();
                   _device2Controller.clear();
                 });
@@ -139,7 +162,6 @@ class _CompareState extends State<Compare> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // User Query Chat Bubble
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
@@ -160,13 +182,17 @@ class _CompareState extends State<Compare> {
               ),
               const SizedBox(height: 20),
 
-              // Place your AIComparisonResult widget here!
-              // AIComparisonResult(data: yourJsonData),
-              Container(
-                padding: const EdgeInsets.all(20),
-                color: Colors.grey.shade200,
-                child: const Text("Comparison Result UI Goes Here"),
-              )
+              // Handle API States
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_errorMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.red.shade50,
+                  child: Text("Error: $_errorMessage", style: const TextStyle(color: Colors.red)),
+                )
+              else if (_compareResult != null)
+                  ResultComparisonFormat(data: _compareResult!)
             ],
           ),
         ),
@@ -193,7 +219,7 @@ class _CompareState extends State<Compare> {
                       showSendButton: false,
                       searchHint: "Device 1",
                       controller: _device1Controller,
-                      isCompact: true, // Shrink
+                      isCompact: true,
                     ),
                   ),
                   const Padding(
@@ -205,7 +231,7 @@ class _CompareState extends State<Compare> {
                       showSendButton: false,
                       searchHint: "Device 2",
                       controller: _device2Controller,
-                      isCompact: true, // Shrink
+                      isCompact: true,
                     ),
                   ),
                 ],

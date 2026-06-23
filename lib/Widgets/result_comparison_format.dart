@@ -14,6 +14,11 @@ class ResultComparisonFormat extends StatelessWidget {
     final List buyBIf = aiCompare['buy_product_b_if'] ?? [];
     final List breakdowns = aiCompare['feature_breakdowns'] ?? [];
 
+    // Extract real product names from the response for labelling
+    final products = data['products'] ?? {};
+    final String nameA = (products['product_a']?['name'] ?? 'Product A').toString();
+    final String nameB = (products['product_b']?['name'] ?? 'Product B').toString();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -40,7 +45,8 @@ class ResultComparisonFormat extends StatelessWidget {
                     ),
                     Text(
                       winner,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                      // FIX: was Colors.black87 — invisible on black background
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ],
                 ),
@@ -68,13 +74,13 @@ class ResultComparisonFormat extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Recommendation Matrix
+        // Recommendation Matrix — use real product names instead of "Product A/B"
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _buildAdviceCard("Buy Product A if:", buyAIf, Colors.blue.shade700)),
+            Expanded(child: _buildAdviceCard("Buy $nameA if:", buyAIf, Colors.blue.shade700)),
             const SizedBox(width: 12),
-            Expanded(child: _buildAdviceCard("Buy Product B if:", buyBIf, Colors.purple.shade700)),
+            Expanded(child: _buildAdviceCard("Buy $nameB if:", buyBIf, Colors.purple.shade700)),
           ],
         ),
         const SizedBox(height: 16),
@@ -98,18 +104,21 @@ class ResultComparisonFormat extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(item['category_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Expanded(
+                          child: Text(item['category_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                          child: Text("Winner: ${item['category_winner']}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          child: Text("Winner: ${item['category_winner'] ?? 'Tie'}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text("Product A: ${item['product_a_details']}", style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                    // FIX: use real product names instead of hardcoded "Product A / Product B"
+                    Text("$nameA: ${item['product_a_details'] ?? ''}", style: const TextStyle(fontSize: 13, color: Colors.black87)),
                     const SizedBox(height: 4),
-                    Text("Product B: ${item['product_b_details']}", style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                    Text("$nameB: ${item['product_b_details'] ?? ''}", style: const TextStyle(fontSize: 13, color: Colors.black54)),
                   ],
                 ),
               ),

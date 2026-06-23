@@ -98,4 +98,28 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
+  // Fetch all user profile data from SharedPreferences
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'fullName': prefs.getString('full_name') ?? 'Guest',
+      'email': prefs.getString('email') ?? 'No email provided',
+      'age': prefs.getInt('age') ?? 0,
+      'gender': prefs.getString('gender') ?? 'Not specified',
+    };
+  }
+
+  // Update session data locally (You can later connect this to an API)
+  Future<void> updateProfileLocal({
+    required String fullName,
+    required String email,
+    int? age,
+    String? gender,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('full_name', fullName);
+    await prefs.setString('email', email);
+    if (age != null) await prefs.setInt('age', age);
+    if (gender != null) await prefs.setString('gender', gender);
+  }
 }

@@ -7,11 +7,14 @@ class ProductSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = data['product'] ?? {};
-    final String name = product['name'] ?? 'Unknown Product';
-    final String estPrice = product['estimated_price'] ?? 'N/A';
-    final List stores = product['available_stores'] ?? [];
-    final Map specs = product['specs'] ?? {};
+    // 1. Map the exact keys coming from your FastAPI backend
+    final String name = data['name'] ?? 'Unknown Product';
+    final String priceEgp = data['current_price_egp']?.toString() ?? 'N/A';
+    final String priceUsd = data['global_usd_price']?.toString() ?? '';
+    final String imageUrl = data['image_url'] ?? '';
+    final List pros = data['pros'] ?? [];
+    final List cons = data['cons'] ?? [];
+    final String summary = data['sentiment_summary'] ?? '';
 
     return Card(
       elevation: 3,
@@ -25,19 +28,39 @@ class ProductSearchResult extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  // Safely load the network image from the API
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.image, size: 40, color: Colors.grey),
+                  )
+                      : const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("Est. Market Price: $estPrice", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Text(
+                        "EGP $priceEgp",
+                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      if (priceUsd.isNotEmpty)
+                        Text(
+                          "Global: $priceUsd",
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
                     ],
                   ),
                 ),
@@ -45,34 +68,48 @@ class ProductSearchResult extends StatelessWidget {
             ),
             const Divider(height: 24),
 
-            // Hardware Specs List
-            const Text("Key Specifications", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 8),
-            ...specs.entries.map((entry) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(entry.key, style: const TextStyle(color: Colors.grey)),
-                  Text(entry.value.toString(), style: const TextStyle(fontWeight: FontWeight.w500)),
-                ],
-              ),
-            )),
-            const Divider(height: 24),
+            // AI Sentiment Summary
+            if (summary.isNotEmpty) ...[
+              const Text("AI Summary", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
+              Text(summary, style: const TextStyle(color: Colors.black87, height: 1.4, fontSize: 13)),
+              const Divider(height: 24),
+            ],
 
-            // Store Availability
-            const Text("Available Offers In Egypt", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 8),
-            ...stores.map((store) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.storefront, color: Colors.blueGrey),
-              title: Text(store['store_name'] ?? ''),
-              subtitle: Text(store['stock_status'] ?? 'In Stock'),
-              trailing: Text(
-                store['price'] ?? '',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-              ),
-            )),
+            // Pros
+            if (pros.isNotEmpty) ...[
+              const Text("Pros", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
+              const SizedBox(height: 8),
+              ...pros.map((pro) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(pro.toString(), style: const TextStyle(fontSize: 13))),
+                  ],
+                ),
+              )),
+              const SizedBox(height: 12),
+            ],
+
+            // Cons
+            if (cons.isNotEmpty) ...[
+              const Text("Cons", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
+              const SizedBox(height: 8),
+              ...cons.map((con) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.cancel, color: Colors.red, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(con.toString(), style: const TextStyle(fontSize: 13))),
+                  ],
+                ),
+              )),
+            ],
           ],
         ),
       ),
