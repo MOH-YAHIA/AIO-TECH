@@ -14,22 +14,35 @@ class ResultComparisonFormat extends StatelessWidget {
     final List buyBIf = aiCompare['buy_product_b_if'] ?? [];
     final List breakdowns = aiCompare['feature_breakdowns'] ?? [];
 
-    // Extract real product names from the response for labelling
+    // Real product data (includes prices and images)
     final products = data['products'] ?? {};
-    final String nameA = (products['product_a']?['name'] ?? 'Product A').toString();
-    final String nameB = (products['product_b']?['name'] ?? 'Product B').toString();
+    final Map<String, dynamic> productA =
+    Map<String, dynamic>.from(products['product_a'] ?? {});
+    final Map<String, dynamic> productB =
+    Map<String, dynamic>.from(products['product_b'] ?? {});
+    final String nameA = productA['name'] ?? 'Product A';
+    final String nameB = productB['name'] ?? 'Product B';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Overall Winner Banner
+        // ── Product Price Cards ─────────────────────────────────
+        Row(
+          children: [
+            Expanded(child: _buildProductCard(productA, Colors.blue.shade700)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildProductCard(productB, Colors.purple.shade700)),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // ── Overall Winner Banner ───────────────────────────────
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black, width: 1.5),
           ),
           child: Row(
             children: [
@@ -39,15 +52,16 @@ class ResultComparisonFormat extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Overall Winner",
-                      style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      winner,
-                      // FIX: was Colors.black87 — invisible on black background
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    const Text("Overall Winner",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold)),
+                    Text(winner,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)), // FIX: white on black
                   ],
                 ),
               ),
@@ -56,37 +70,50 @@ class ResultComparisonFormat extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Executive Summary Card
+        // ── Executive Summary ───────────────────────────────────
         Card(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Executive Summary", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text("Executive Summary",
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
                 const Divider(),
-                Text(summary, style: const TextStyle(fontSize: 15, height: 1.4, color: Colors.black54)),
+                Text(summary,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.4,
+                        color: Colors.black54)),
               ],
             ),
           ),
         ),
         const SizedBox(height: 16),
 
-        // Recommendation Matrix — use real product names instead of "Product A/B"
+        // ── Buy Recommendations ─────────────────────────────────
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _buildAdviceCard("Buy $nameA if:", buyAIf, Colors.blue.shade700)),
+            Expanded(
+                child: _buildAdviceCard(
+                    "Buy $nameA if:", buyAIf, Colors.blue.shade700)),
             const SizedBox(width: 12),
-            Expanded(child: _buildAdviceCard("Buy $nameB if:", buyBIf, Colors.purple.shade700)),
+            Expanded(
+                child: _buildAdviceCard(
+                    "Buy $nameB if:", buyBIf, Colors.purple.shade700)),
           ],
         ),
         const SizedBox(height: 16),
 
-        // Feature Breakdown Specifications Table
-        const Text("Feature Breakdown", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        // ── Feature Breakdown ───────────────────────────────────
+        const Text("Feature Breakdown",
+            style:
+            TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         ListView.builder(
           shrinkWrap: true,
@@ -102,23 +129,31 @@ class ResultComparisonFormat extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(item['category_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          child: Text(item['category_name'] ?? '',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16)),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                          child: Text("Winner: ${item['category_winner'] ?? 'Tie'}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Text(
+                              "Winner: ${item['category_winner'] ?? 'Tie'}",
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    // FIX: use real product names instead of hardcoded "Product A / Product B"
-                    Text("$nameA: ${item['product_a_details'] ?? ''}", style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                    _buildDetailRow(nameA, item['product_a_details'], Colors.blue.shade700),
                     const SizedBox(height: 4),
-                    Text("$nameB: ${item['product_b_details'] ?? ''}", style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                    _buildDetailRow(nameB, item['product_b_details'], Colors.purple.shade700),
                   ],
                 ),
               ),
@@ -126,6 +161,107 @@ class ResultComparisonFormat extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  /// Mini card showing product image, name, and price
+  Widget _buildProductCard(Map<String, dynamic> product, Color accentColor) {
+    final String name = product['name'] ?? 'Unknown';
+    final dynamic rawPrice =
+        product['current_price_egp'] ?? product['price_egp'];
+    final String price =
+    rawPrice != null ? 'EGP ${rawPrice.toString()}' : 'N/A';
+    final String imageUrl = product['image_url'] ?? '';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: accentColor.withOpacity(0.4)),
+        borderRadius: BorderRadius.circular(12),
+        color: accentColor.withOpacity(0.05),
+      ),
+      child: Row(
+        children: [
+          _buildThumb(imageUrl, name, accentColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Text(price,
+                    style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThumb(String imageUrl, String name, Color accentColor) {
+    final Widget fallback = Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: TextStyle(
+              color: accentColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 20),
+        ),
+      ),
+    );
+
+    if (imageUrl.isEmpty) return fallback;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        imageUrl,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        headers: const {
+          'User-Agent':
+          'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36',
+          'Referer': 'https://www.google.com/',
+        },
+        errorBuilder: (context, error, stackTrace) => fallback,
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, dynamic detail, Color labelColor) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label: ',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: labelColor),
+          ),
+          TextSpan(
+            text: detail?.toString() ?? '',
+            style: const TextStyle(fontSize: 13, color: Colors.black87),
+          ),
+        ],
+      ),
     );
   }
 
@@ -140,11 +276,17 @@ class ResultComparisonFormat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: accentColor, fontSize: 14)),
+          Text(title,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: accentColor,
+                  fontSize: 14)),
           const SizedBox(height: 8),
           ...items.map((item) => Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: Text("• $item", style: const TextStyle(fontSize: 12, height: 1.3)),
+            child: Text("• $item",
+                style:
+                const TextStyle(fontSize: 12, height: 1.3)),
           )),
         ],
       ),

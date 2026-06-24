@@ -19,9 +19,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final ProductService _productService = ProductService(); // Initialize service
 
   bool _hasSearched = false;
-  bool _isLoading = false; // Track API loading state
+  bool _isLoading = false;
   String _lastQuery = "";
-  Map<String, dynamic>? _apiResult; // Store the JSON response
+  dynamic _apiResult; // Can be Map (product mode) or List (detailed mode)
   String _errorMessage = "";
 
   @override
@@ -59,10 +59,17 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = false; // Stop loading spinner
       if (result['success']) {
-        // Handles both 'product' and 'detailed' modes, regardless of how
-        // many payload/data wrapper levels the backend uses, and whether
-        // the result comes back as a single object or a list of matches.
-        _apiResult = ProductService.extractProductMap(result['data']);
+        final responseData = result['data'];
+        // Walk through payload/data wrappers to find the real content.
+        // 'detailed' mode returns a List of product maps;
+        // 'product' mode returns a single product Map.
+        dynamic unwrapped = responseData;
+        for (final key in ['payload', 'data']) {
+          if (unwrapped is Map && unwrapped.containsKey(key)) {
+            unwrapped = unwrapped[key];
+          }
+        }
+        _apiResult = unwrapped; // List<dynamic> or Map<String, dynamic>
       } else {
         _errorMessage = result['message'];
       }
@@ -140,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 setState(() {
                   _hasSearched = false;
-                  _apiResult = null; // Clear previous results
+                  _apiResult = null;
                   _device1Controller.clear();
                 });
               },
@@ -181,9 +188,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.red.shade50,
                   child: Text("Error: $_errorMessage", style: const TextStyle(color: Colors.red)),
                 )
-              else if (_apiResult != null)
-                // Pass the real API data into your UI Widget!
-                  ProductSearchResult(data: _apiResult!)
+              else if (_apiResult is List)
+                // Detailed mode: list of product cards
+                  ...((_apiResult as List).map((item) =>
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: ProductSearchResult(data: Map<String, dynamic>.from(item)),
+                      )
+                  ))
+                else if (_apiResult is Map)
+                  // Product mode: single product card
+                    ProductSearchResult(data: Map<String, dynamic>.from(_apiResult as Map))
             ],
           ),
         ),
