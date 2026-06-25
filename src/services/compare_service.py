@@ -53,7 +53,7 @@ class ComparisonWorkflowManager:
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("❌ GEMINI_API_KEY is missing from environment variables.")
+            raise ValueError("GEMINI_API_KEY is missing from environment variables.")
         
         self.client = genai.Client(api_key=api_key)
         self.model_name = "gemini-2.5-flash-lite"
@@ -67,14 +67,14 @@ class ComparisonWorkflowManager:
         (hitting the cache or APIs), and then synthesizes a head-to-head AI comparison.
         """
         # 1. Fetch or generate the structured data for Product A
-        print(f"📦 [Comparison Engine] Fetching data for Product A: '{product_a_query}'")
+        print(f"[Comparison Engine] Fetching data for Product A: '{product_a_query}'")
         res_a = self.product_manager.process_deep_dive(db=db, user_query=product_a_query)
         if "error" in res_a:
             raise ValueError(f"Failed to retrieve Product A: {res_a['error']}")
         product_a_data = res_a["data"]
 
         # 2. Fetch or generate the structured data for Product B
-        print(f"📦 [Comparison Engine] Fetching data for Product B: '{product_b_query}'")
+        print(f"[Comparison Engine] Fetching data for Product B: '{product_b_query}'")
         res_b = self.product_manager.process_deep_dive(db=db, user_query=product_b_query)
         if "error" in res_b:
             raise ValueError(f"Failed to retrieve Product B: {res_b['error']}")
@@ -83,7 +83,7 @@ class ComparisonWorkflowManager:
         # 3. Execute AI Comparison Reasoning
         product_a_name = product_a_data.get("name", "Product A")
         product_b_name = product_b_data.get("name", "Product B")
-        print(f"🥊 [Comparison Engine] Compiling AI head-to-head: '{product_a_name}' vs '{product_b_name}'...")
+        print(f"[Comparison Engine] Compiling AI head-to-head: '{product_a_name}' vs '{product_b_name}'...")
 
         comparison_prompt = f"""
         You are an elite, highly objective consumer electronics analyst. 
