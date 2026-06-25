@@ -10,6 +10,8 @@ class ProductAnalysis(Base):
     
     # Identity 
     name = Column(String, unique=True, nullable=False, index=True)
+    category = Column(String, nullable=True)
+    brand = Column(String, nullable=True)
     
     # Semantic Context (From Gemini)
     description = Column(String, nullable=True)

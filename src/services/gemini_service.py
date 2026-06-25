@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List
+from typing import List, Literal
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
@@ -9,12 +9,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # =====================================================================
-# 🏗️ STEP 1: Define the Streamlined Structural Invariants 
+# STEP 1: Define the Streamlined Structural Invariants 
 # =====================================================================
-
+CategoryLiteral = Literal[
+    "smartphone", "laptop", "tablet", "smartwatch", 
+    "headphones", "speaker", "gaming_console", "pc_component", 
+    "camera", "smart_home", "tv_monitor", "networking", "accessory"
+]
+    
 class ProductAnalysisSchema(BaseModel):
     name: str = Field(
         description="The exact, standardized official product name including specific storage/variant formatting (e.g., 'Samsung Galaxy S24 Ultra 256GB')."
+    )
+    category: CategoryLiteral = Field(
+        description="The product category. Must exactly match one of the allowed literal strings."
+    )
+    brand: str = Field(
+        description="The product brand (e.g., 'samsung', 'apple', 'google')."
     )
     description: str = Field(
         description="A robust, highly accurate technical summary of the product's primary specifications, key chipsets, hardware metrics, and primary intended market use-case."
@@ -34,17 +45,17 @@ class ProductAnalysisSchema(BaseModel):
 
 
 # =====================================================================
-# 🧠 STEP 2: Implement the Streamlined Two-Stage Analyzer
+# STEP 2: Implement the Streamlined Two-Stage Analyzer
 # =====================================================================
 
 class DeepDiveAnalyzer:
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("❌ GEMINI_API_KEY is missing from environment variables.")
+            raise ValueError("GEMINI_API_KEY is missing from environment variables.")
         
         self.client = genai.Client(api_key=api_key)
-        self.model_name = "gemini-2.5-flash-lite"
+        self.model_name = "gemini-2.5-flash"
 
     def analyze_product(self, product_query: str) -> dict:
         """

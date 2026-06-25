@@ -13,7 +13,7 @@ class ProductWorkflowManager:
         self.ai_analyzer = DeepDiveAnalyzer()
         self.embedding_generator = VectorEmbedding()
         self.serp_extractor = GlobalProductDetailsExtractor()
-        self.similarity_threshold = 0.4
+        self.similarity_threshold = 0.9  # Adjusted for stricter similarity matching
         self.cache_expiration_hours = 24*7  # 1 week
 
     def _format_for_api(self, product: ProductAnalysis) -> dict:
@@ -21,6 +21,8 @@ class ProductWorkflowManager:
         return {
             "id": product.id,
             "name": product.name,
+            "category": product.category,
+            "brand": product.brand,
             "description": product.description,
             "current_price_egp": product.current_price_egp,
             "pros": product.pros,
@@ -93,7 +95,6 @@ class ProductWorkflowManager:
         # PHASE 3: Vector Generation
         # -----------------------------------------------------------------
         rich_context = (
-            f"Product: {standardized_name}. "
             f"Description: {gemini_data.get('description', '')}. "
             f"Summary: {gemini_data.get('sentiment_summary', '')}. "
             f"Pros: {', '.join(gemini_data.get('pros', []))}. "
@@ -117,6 +118,8 @@ class ProductWorkflowManager:
                 cached_product.cons = gemini_data.get("cons", [])
                 cached_product.sentiment_summary = gemini_data.get("sentiment_summary", "")
                 cached_product.embedding = clean_1d_vector
+                cached_product.category = gemini_data.get("category", "")
+                cached_product.brand = gemini_data.get("brand", "")
                 
                 # Flat updates
                 cached_product.image_url = extracted_image
@@ -137,7 +140,8 @@ class ProductWorkflowManager:
                     cons=gemini_data.get("cons", []),
                     sentiment_summary=gemini_data.get("sentiment_summary", ""),
                     embedding=clean_1d_vector,
-                    
+                    category=gemini_data.get("category", ""),
+                    brand=gemini_data.get("brand", ""),
                     # Flat Inserts
                     image_url=extracted_image,
                     global_rating=extracted_rating,

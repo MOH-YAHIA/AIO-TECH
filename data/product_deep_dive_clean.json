@@ -1,20 +1,22 @@
 {
     "name": "Samsung Galaxy S24 Ultra 256GB",
-    "description": "The Samsung Galaxy S24 Ultra 256GB is a flagship smartphone featuring a 6.8-inch QHD+ Dynamic AMOLED 2X display with a 120Hz refresh rate, powered by the Qualcomm Snapdragon 8 Gen 3 for Galaxy chipset and 12GB of RAM. It boasts a quad-camera system with a 200MP main sensor, a 5000 mAh battery with 45W wired charging, and includes an integrated S Pen. The device is constructed with a titanium frame and protected by Corning Gorilla Armor, designed for high-end mobile computing and photography.",
-    "current_price_egp": 44399.0,
+    "category": "phone",
+    "brand": "samsung",
+    "description": "The Samsung Galaxy S24 Ultra 256GB is a flagship smartphone powered by the Qualcomm Snapdragon 8 Gen 3 (4 nm) processor, designed for high performance and advanced user experience. It features a 6.8-inch Dynamic LTPO AMOLED 2X display with QHD+ resolution, 120Hz adaptive refresh rate, and 2600 nits peak brightness, protected by Corning Gorilla Armor. Key features include Galaxy AI capabilities like Circle to Search and Live Translate, a versatile quad-camera system with a 200MP main sensor and advanced optical zoom, an integrated S Pen for productivity, a durable titanium frame with IP68 rating, and a 5000 mAh battery supporting 45W wired fast charging. Samsung promises up to 7 years of Android OS upgrades for this device.",
+    "current_price_egp": 72000.0,
     "pros": [
-        "The Snapdragon 8 Gen 3 for Galaxy chipset and 12GB of RAM deliver top-tier performance for demanding tasks, gaming, and multitasking.",
-        "The 6.8-inch Dynamic AMOLED 2X display offers vibrant colors, sharp details, and a smooth 120Hz refresh rate for an immersive viewing experience.",
-        "The 200MP main camera and versatile secondary lenses capture high-quality photos and videos in various conditions.",
-        "The built-in S Pen enhances productivity for note-taking, drawing, and precise control.",
-        "Samsung has committed to 7 years of software and security updates, which is a significant advantage for longevity and resale value."
+        "The Snapdragon 8 Gen 3 processor delivers fast and smooth performance, handling gaming and multitasking with ease.",
+        "The 6.8-inch Dynamic AMOLED 2X screen is lauded for its brightness, sharpness, and vibrant colors, with the anti-reflective coating being a standout feature for outdoor visibility.",
+        "Many users report that the 5000 mAh battery easily lasts a full day of heavy use, with some extending it to two days with moderate usage.",
+        "The 200MP main camera and advanced zoom capabilities are highly appreciated for capturing detailed and high-quality photos and videos.",
+        "Galaxy AI tools like Circle to Search and Live Translate are found to be genuinely helpful and quick to operate."
     ],
     "cons": [
-        "The high price point can be a barrier for some consumers in Egypt, especially given currency fluctuations.",
-        "Some users have reported overheating issues, particularly during prolonged gaming sessions or heavy multitasking, which can be exacerbated by high ambient temperatures in Egypt.",
-        "For power users who prefer to root their devices or install custom ROMs, the locked bootloader presents a significant limitation.",
-        "One user reported that the USB-C port became unreliable over time, with car chargers refusing to negotiate power.",
-        "The large form factor may be unwieldy for users with smaller hands."
+        "A significant number of users report the phone heating up, sometimes excessively, during demanding tasks like gaming, video recording, and even during lighter use such as social media or video calls, exacerbated by local climate conditions.",
+        "Some users experience faster-than-expected battery drain, with screen-on times as low as 3-4 hours for heavy users, and reports of battery discharging even when plugged into a 45W charger.",
+        "There are documented cases of Samsung warranty claims being denied by local service centers, with users reporting manufacturing defects being incorrectly attributed to physical damage.",
+        "The device's high cost is a recurring concern, with some users feeling that the incremental upgrades over previous models do not fully justify the premium price in the Egyptian market.",
+        "While supporting 45W fast charging, some users find it slower compared to competitors, and issues with charging stability have been noted, which is problematic during load-shedding periods."
     ],
-    "sentiment_summary": "Online discussions reveal a generally positive sentiment towards the Samsung Galaxy S24 Ultra, with users praising its raw performance, excellent display, and advanced camera capabilities, including AI features. However, recurring themes include concerns about the locked bootloader limiting customization, potential overheating issues exacerbated by Egypt's climate, and questions about the value proposition given the high cost and software restrictions."
+    "sentiment_summary": "Organic user sentiment in Egyptian tech communities is largely positive regarding the S24 Ultra's core performance, display quality, camera capabilities, and the utility of the S Pen and new AI features. However, a notable undercurrent of frustration exists concerning overheating, battery drain, and warranty service issues, particularly the denial of claims for what users perceive as manufacturing defects. The high price is consistently mentioned as a barrier, leading some to question its overall value for money."
 }
