@@ -5,6 +5,7 @@ import 'package:aio_tech/Screens/profile.dart';
 import 'package:aio_tech/Screens/sign_up.dart';
 import 'package:aio_tech/Screens/watch_list.dart';
 import 'package:aio_tech/Widgets/drawer_design.dart';
+import 'package:aio_tech/utils/app_colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'Screens/home_screen.dart';
@@ -47,9 +48,18 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
-
   bool _isLoading = true;
   final AuthService _authService = AuthService();
+
+  // Increments on logout → forces Login, SignUp, Profile to fully recreate
+  // (disposes old State, clears controllers, clears cached futures).
+  int _sessionKey = 0;
+
+  // Increments every time the user navigates TO Profile, or after login/logout.
+  // Profile watches this via didUpdateWidget and re-fetches SharedPreferences
+  // whenever it changes — so it always shows current data regardless of when
+  // IndexedStack first built it relative to _saveSession completing.
+  int _profileRefreshTrigger = 0;
 
   @override
   void initState() {
@@ -59,7 +69,6 @@ class _MainWrapperState extends State<MainWrapper> {
 
   Future<void> _checkInitialAuth() async {
     final bool loggedIn = await _authService.isLoggedIn();
-
     if (mounted) {
       setState(() {
         _currentIndex = loggedIn ? 2 : 0;
@@ -68,36 +77,54 @@ class _MainWrapperState extends State<MainWrapper> {
     }
   }
 
+  void _onLoginSuccess() {
+    // _saveSession has already fully completed before login() returned,
+    // so incrementing the trigger here guarantees Profile re-reads
+    // SharedPreferences AFTER all new account data is on disk.
+    setState(() {
+      _profileRefreshTrigger++;
+      _currentIndex = 2;
+    });
+  }
+
+  Future<void> _onLogout() async {
+    await _authService.logout();
+    setState(() {
+      _sessionKey++;            // recreate Login, SignUp, Profile widgets
+      _profileRefreshTrigger++; // reset trigger counter for the new session
+      _currentIndex = 0;
+    });
+  }
+
+  // Increments _profileRefreshTrigger whenever the user explicitly opens
+  // Profile (index 6), so data is always fresh after an Edit Profile update.
+  void onTap(int index) {
+    setState(() {
+      if (index == 6) _profileRefreshTrigger++;
+      _currentIndex = index;
+    });
+  }
+
   List<Widget> get _pages => [
     Login(
-      onNavigateToSignUp: () {
-        onTap(1);
-      },
-      onSignUpSuccess: () {
-        onTap(2); // Navigates to HomeScreen
-      },
+      key: ValueKey('login_$_sessionKey'),
+      onNavigateToSignUp: () => onTap(1),
+      onSignUpSuccess: _onLoginSuccess,
     ),
     SignUp(
-      onSignUpSuccess: () {
-        onTap(2); // Navigates to HomeScreen
-      },
+      key: ValueKey('signup_$_sessionKey'),
+      onSignUpSuccess: _onLoginSuccess,
     ),
     HomeScreen(),
     WatchList(),
     Dashboard(),
     Compare(),
     Profile(
-      onBackPressed: () {
-        onTap(2);
-      },
+      key: ValueKey('profile_$_sessionKey'),
+      refreshTrigger: _profileRefreshTrigger,
+      onBackPressed: () => onTap(2),
     ),
   ];
-
-  void onTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,37 +134,52 @@ class _MainWrapperState extends State<MainWrapper> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    final bool isAuthScreen =
-        _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 6;
-    return Scaffold(
-      appBar: isAuthScreen
-          ? null
-          : AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              actions: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    onTap(6);
-                  },
-                  icon: const Icon(Icons.account_circle),
-                  iconSize: 40,
-                ),
-              ],
+
+    final bool isAuthScreen = _currentIndex == 0 || _currentIndex == 1 || _currentIndex == 6;
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/background.jpg'),
+          fit: BoxFit.fill,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: isAuthScreen
+            ? null
+            : AppBar(
+          backgroundColor:
+          AppColors.secondarySurface.withOpacity(0.2),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 35.0,
+          ),
+          elevation: 0,
+          actions: <Widget>[
+            IconButton(
+              onPressed: () => onTap(6),
+              icon: const Icon(Icons.account_circle),
+              iconSize: 40,
+              color: Colors.white,
             ),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      drawer: isAuthScreen
-          ? null
-          : DrawerDesign(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                Navigator.pop(context);
-                if (index == 0) {
-                  _authService.logout();
-                }
-                onTap(index);
-              },
-            ),
+          ],
+        ),
+        body: IndexedStack(index: _currentIndex, children: _pages),
+        drawer: isAuthScreen
+            ? null
+            : DrawerDesign(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            Navigator.pop(context);
+            if (index == 0) {
+              _onLogout();
+            } else {
+              onTap(index);
+            }
+          },
+        ),
+      ),
     );
   }
 }

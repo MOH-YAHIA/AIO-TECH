@@ -1,3 +1,4 @@
+import 'package:aio_tech/Widgets/aio_tech_logo.dart';
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_services.dart';
@@ -17,38 +18,13 @@ class DrawerDesign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppColors.drawerBackground,
+      backgroundColor: AppColors.sidebarBackground.withOpacity(0.9),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-            child: Row(
-              children: [
-                const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      "AIOTech",
-                      style: TextStyle(
-                        color: Color(0xFF19A1E6),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25,
-                      ),
-                    ),
-                    Text(
-                      "Smart Assistant",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child: AIOTechLogo(),
           ),
 
           const Padding(

@@ -1,11 +1,10 @@
+import 'package:aio_tech/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeSearch extends StatefulWidget {
   final String searchHint;
   final TextEditingController controller;
   final bool showSendButton;
-
-  // CHANGED: The callback now passes a String so the parent screen knows the selected model
   final Function(String)? onSearch;
 
   final bool isCompact;
@@ -36,13 +35,13 @@ class _HomeSearchState extends State<HomeSearch> {
         children: [
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(100),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withOpacity(0.5),
                   blurRadius: 10,
                   spreadRadius: 1,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 7),
                 ),
               ],
             ),
@@ -50,11 +49,11 @@ class _HomeSearchState extends State<HomeSearch> {
               maxLines: selectedModel == 'product' ? 1 : null,
               maxLength: selectedModel == 'product' ? 15 : null,
               controller: widget.controller,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               decoration: InputDecoration(
                 counterText: "",
                 contentPadding: EdgeInsets.symmetric(
-                  vertical: widget.isCompact ? 15 : 40,
+                  vertical: widget.isCompact ? 15 : 20,
                   horizontal: 20,
                 ),
                 filled: true,
@@ -71,7 +70,7 @@ class _HomeSearchState extends State<HomeSearch> {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(width: 3, color: Colors.black),
+                  borderSide: BorderSide(width: 3, color: AppColors.searchBarBackground),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -101,17 +100,26 @@ class _HomeSearchState extends State<HomeSearch> {
               child: DropdownButton<String>(
                 value: selectedModel,
                 icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                dropdownColor: AppColors.dropdownSurface,
                 hint: const Text(
                   "Model",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Color(0x8E424040),
+                    color: Color(0xFFC7D8FF),
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(value: "product", child: Text("Product")),
-                  DropdownMenuItem(value: "detailed", child: Text("Detailed")),
+                  DropdownMenuItem(value: "product", child: Text("Product",style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFFC7D8FF),
+                  ),)),
+                  DropdownMenuItem(value: "detailed", child: Text("Detailed",style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFFC7D8FF),
+                  ),)),
                 ],
                 onChanged: (value) {
                   setState(() {

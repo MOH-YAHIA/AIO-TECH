@@ -38,7 +38,6 @@ class AuthService {
         'message': data['message'] ?? 'Registration failed',
       };
     } catch (e) {
-      // FIX: expose the real error during development
       return {'success': false, 'message': 'Cannot connect to server: $e'};
     }
   }
@@ -98,7 +97,18 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
-  // Fetch all user profile data from SharedPreferences
+
+  // Returns headers with Authorization Bearer token for protected API calls.
+  // FIX: This method was missing — user_service.dart calls it but it didn't exist.
+  Future<Map<String, String>> getAuthHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${token ?? ''}',
+    };
+  }
+
+  // Fetch all user profile data from SharedPreferences (local cache)
   Future<Map<String, dynamic>> getUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
     return {
@@ -109,8 +119,9 @@ class AuthService {
     };
   }
 
-  // Update session data locally (You can later connect this to an API)
-  Future<void> updateProfileLocal({
+  // FIX: Renamed from updateProfileLocal → updateLocalProfile to match
+  // what user_service.dart calls after a successful server update.
+  Future<void> updateLocalProfile({
     required String fullName,
     required String email,
     int? age,
