@@ -19,7 +19,7 @@ class ProductAnalysis(Base):
     id = Column(Integer, primary_key=True, index=True)
     
     # Identity
-    name = Column(String, unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False, index=True)
     category = Column(String, nullable=True)
     brand = Column(String, nullable=True)
     

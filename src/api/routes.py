@@ -44,7 +44,7 @@ class SmartDispatchRequest(BaseModel):
 def execute_smart_dispatch(request: SmartDispatchRequest, db: Session = Depends(get_db)):
     """
     Agentic Semantic Gateway: Routes incoming traffic based on real-time 
-    intent token analysis from Llama 3.2.
+    intent token analysis from geimin-2.5-flash-lite
     """
     try:
         # 1.  Invoke local routing wrapper
@@ -153,7 +153,18 @@ def execute_comparison(request: CompareRequest, db: Session = Depends(get_db)):
         if "error" in result:
             raise HTTPException(status_code=502, detail=result["error"])
 
-        return {"status": "success", "payload": result}
+        if result['status']=="non-valid":
+            return {
+                "status": "error", 
+                "routing": "compare", 
+                "details": "non valid product names"
+            }
+        
+        return {
+            "status": "success", 
+            "routing": "compare" ,
+            "payload": result
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Comparison Pipeline Crash: {str(e)}")

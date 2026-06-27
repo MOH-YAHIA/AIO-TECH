@@ -12,6 +12,66 @@ from src.services.product_service import ProductWorkflowManager
 
 load_dotenv()
 
+# Define strict structural invariants for the validation state
+class DeviceStatus(BaseModel):
+    is_valid: bool = Field(
+        description="True if the input is a real, recognizable consumer electronic device or hardware model. False if it is gibberish, completely unrelated, or generic text."
+    )
+    cleaned_name: str = Field(
+        description="The fully normalized, corrected lowercase product name (e.g., convert 'ipone 14 max pro' to 'iphone 14 pro max'). If is_valid is False, return 'none'."
+    )
+
+class BatchDeviceCleaningSchema(BaseModel):
+    device_1: DeviceStatus
+    device_2: DeviceStatus
+
+
+class DeviceNameSanitizer:
+    def __init__(self):
+        api_key = os.getenv("GEMINI_API_KEY_2")
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = 'gemini-2.5-flash'
+
+    def clean_device_pair(self, name_a: str, name_b: str) -> tuple[dict, dict]:
+        """
+        Batches two raw device strings into a single Gemini structured call.
+        Returns a tuple containing the validation status and cleaned names.
+        """
+        prompt = f"""
+        You are a high-precision data sanitization service for an e-commerce catalog database.
+        Analyze and clean the following two raw user-input device strings:
+        
+        Device 1: "{name_a}"
+        Device 2: "{name_b}"
+        
+        CRITICAL RULES:
+        1. Correct typo deviations, spacing anomalies, and missing sub-brand labels (e.g., 'ipone 14 max pro' -> 'iphone 14 pro max').
+        2. Force all output text in 'cleaned_name' to be lowercase.
+        3. Flag fully non-electronics, empty inputs, or chaotic strings as invalid (is_valid = False).
+        """
+
+        try:
+            # Type-safe structured output extraction
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": BatchDeviceCleaningSchema,
+                    "temperature": 0.0 # Strict deterministic decoding
+                }
+            )
+            
+            # Extract the automatically parsed Pydantic object
+            if response.parsed:
+                data = response.parsed
+                return data.device_1.model_dump(), data.device_2.model_dump()
+            
+            raise RuntimeError("Gemini failed to populate the structural schema format.")
+            
+        except Exception as e:
+            raise RuntimeError(f"[Sanitization Failure] Error talking to {self.model_name}: {str(e)}")
+        
 # =====================================================================
 #  STRICT COMPARISON SCHEMAS
 # =====================================================================
@@ -51,7 +111,7 @@ class ProductComparisonSchema(BaseModel):
 # =====================================================================
 class ComparisonWorkflowManager:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY_2")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is missing from environment variables.")
         
@@ -66,6 +126,19 @@ class ComparisonWorkflowManager:
         Orchestrates the entire comparison flow: Fetches deep-dive data for both products 
         (hitting the cache or APIs), and then synthesizes a head-to-head AI comparison.
         """
+
+        sanitizer = DeviceNameSanitizer()
+    
+        # Test cases: one with typos, one completely invalid
+        res_1, res_2 = sanitizer.clean_device_pair(
+            name_a=product_a_query,
+            name_b=product_b_query
+        )
+        if not res_1['is_valid'] or not res_2['is_valid']:
+            return {"status" : "non-valid"}
+        
+        product_a_query,product_b_query=res_1['cleaned_name'],res_2['cleaned_name']
+
         # 1. Fetch or generate the structured data for Product A
         print(f"[Comparison Engine] Fetching data for Product A: '{product_a_query}'")
         res_a = self.product_manager.process_deep_dive(db=db, user_query=product_a_query)
@@ -122,6 +195,7 @@ class ComparisonWorkflowManager:
 
             # 4. Return the complete package back to the API
             return {
+                "status" : "valid",
                 "products": {
                     "product_a": product_a_data,
                     "product_b": product_b_data
@@ -139,6 +213,6 @@ if __name__ == "__main__":
     from src.core.database import SessionLocal
     db = SessionLocal()
     comparator = ComparisonWorkflowManager()
-    result = comparator.generate_comparison(db, "iPhone 14 Pro Max", "Samsung Galaxy S23 Ultra")
+    result = comparator.generate_comparison(db, "iPhoe 14 Pro Max", "Samsung Galxy S23 Ultra")
     with open("data/comparison_output.json", "w") as f:
         json.dump(result, f, indent=4)

@@ -1,13 +1,18 @@
+import json
 from typing import Literal
-
+from dotenv import load_dotenv
+import os 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-import ollama
+from google import genai  # Replaced ollama with the official Google GenAI SDK
 from pydantic import BaseModel, Field
-import json
 
 from src.models.product import ProductAnalysis
 from src.services.embedding_service import VectorEmbedding
+
+
+load_dotenv()
+
 
 CategoryLiteral = Literal[
     "smartphone", "laptop", "tablet", "smartwatch", 
@@ -31,12 +36,14 @@ class SearchExtractionSchema(BaseModel):
 
 class SearchWorkflowManager:
     def __init__(self):
-        self.model_name = 'llama3.2'
+        # The genai SDK automatically reads your GEMINI_API_KEY environment variable
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY_2"))
+        self.model_name = 'gemini-2.5-flash'
         self.embedding_model = VectorEmbedding()
 
     def _extract_query_metadata(self, raw_user_query: str) -> dict:
         """
-        Uses Llama 3.2 structured decoding to parse unstructured text 
+        Uses Gemini 2.5 Flash structured decoding to parse unstructured text 
         into highly rigid, filterable search metadata tokens.
         """
         system_prompt = """
@@ -52,19 +59,24 @@ class SearchWorkflowManager:
         """
 
         try:
-            response = ollama.chat(
+            # Clean native SDK call with built-in Pydantic schema targeting
+            response = self.client.models.generate_content(
                 model=self.model_name,
-                messages=[
-                    {'role': 'system', 'content': system_prompt},
-                    {'role': 'user', 'content': f"Parse: {raw_user_query}"}
-                ],
-                # INVARIANT: Enforces absolute structural compliance via grammar constraints
-                format=SearchExtractionSchema.model_json_schema(),
-                options={'temperature': 0.0} # Pure determinism
+                contents=f"Parse: {raw_user_query}",
+                config={
+                    "system_instruction": system_prompt,
+                    "response_mime_type": "application/json",
+                    "response_schema": SearchExtractionSchema,
+                    "temperature": 0.0  # Pure determinism
+                }
             )
             
-            extracted_dict = json.loads(response['message']['content'])
-            return extracted_dict
+            # The SDK automatically handles the JSON parsing and validation into your Pydantic model
+            if response.parsed:
+                return response.parsed.model_dump()
+            
+            # Safe structural fallback parsing just in case
+            return json.loads(response.text)
         
         except Exception as e:
             raise RuntimeError(f"[Extraction Error] Failed to parse query metadata using {self.model_name}: {str(e)}")
@@ -108,8 +120,6 @@ class SearchWorkflowManager:
         except Exception as vector_err:
             raise RuntimeError(f"[Vector Search Error] Failed to execute vector search using {self.embedding_model.name} and query database: {str(vector_err)}")
 
-        
-
         # Format the response for the frontend
         recommendations = []
         for product in nearest_products:
@@ -133,7 +143,7 @@ class SearchWorkflowManager:
                 }
             )
                 
-            return recommendations
+        return recommendations
 
 if __name__ == "__main__":
     from src.core.database import SessionLocal

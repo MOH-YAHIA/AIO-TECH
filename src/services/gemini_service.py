@@ -19,7 +19,7 @@ CategoryLiteral = Literal[
     
 class ProductAnalysisSchema(BaseModel):
     name: str = Field(
-        description="The exact, standardized official product name including specific storage/variant formatting (e.g., 'Samsung Galaxy S24 Ultra 256GB')."
+        description="The exact, standardized official product name exculding specific storage/variant formatting (e.g., 'Samsung Galaxy S24 Ultra 256GB')."
     )
     category: CategoryLiteral = Field(
         description="The product category. Must exactly match one of the allowed literal strings."
@@ -137,7 +137,7 @@ class DeepDiveAnalyzer:
 if __name__ == "__main__":
     analyzer = DeepDiveAnalyzer()
     
-    product_to_check = "Samsung Galaxy S24 Ultra 256GB"
+    product_to_check = "Samsung Galaxy S24 Ultra"
     report = analyzer.analyze_product(product_to_check)
     
     os.makedirs("data", exist_ok=True)

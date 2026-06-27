@@ -41,7 +41,11 @@ class ProductWorkflowManager:
         print(f"Analyzing product discovery request for: '{user_query}'")
         
         # 1. Cache Check
-        similarity_score = func.similarity(ProductAnalysis.name, user_query)
+        db_name_upper = func.upper(ProductAnalysis.name)
+        query_upper = func.upper(user_query)
+
+        similarity_score = func.similarity(db_name_upper, query_upper)
+
         cached_product = (
             db.query(ProductAnalysis)
             .filter(similarity_score > self.similarity_threshold)

@@ -4,3 +4,4 @@
 .deployment
 __pycache__
 .vscode
+test.ipynb
