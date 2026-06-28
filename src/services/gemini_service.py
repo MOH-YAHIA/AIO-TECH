@@ -6,7 +6,6 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-load_dotenv()
 
 # =====================================================================
 # STEP 1: Define the Streamlined Structural Invariants 
@@ -50,11 +49,9 @@ class ProductAnalysisSchema(BaseModel):
 
 class DeepDiveAnalyzer:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY is missing from environment variables.")
-        
-        self.client = genai.Client(api_key=api_key)
+        load_dotenv(override=True)
+        self.api_key_1 = os.getenv("GEMINI_API_KEY")
+        self.api_key_2 = os.getenv("GEMINI_API_KEY_2")
         self.model_name = "gemini-2.5-flash"
 
     def analyze_product(self, product_query: str) -> dict:
@@ -82,6 +79,10 @@ class DeepDiveAnalyzer:
             "to construct a strong technical overview statement.\n\n"
             "Compile all validated data points into a thorough, extensive research summary text block focusing strictly on Price, Description, Pros, Cons, and Social Sentiment."
         )
+        if not self.api_key_1:
+            raise ValueError("GEMINI_API_KEY is missing from environment variables.")
+        
+        self.client = genai.Client(api_key=self.api_key_1)
 
         try:
             search_response = self.client.models.generate_content(
@@ -113,6 +114,11 @@ class DeepDiveAnalyzer:
             "Generate raw, structurally valid JSON matching the schema parameters perfectly."
         )
 
+        if not self.api_key_2:
+            raise ValueError("GEMINI_API_KEY_2 is missing from environment variables.")
+        
+        self.client = genai.Client(api_key=self.api_key_2)
+
         try:
             structuring_response = self.client.models.generate_content(
                 model=self.model_name,
@@ -137,7 +143,7 @@ class DeepDiveAnalyzer:
 if __name__ == "__main__":
     analyzer = DeepDiveAnalyzer()
     
-    product_to_check = "Samsung Galaxy S24 Ultra"
+    product_to_check = "iphone 16 pro max"
     report = analyzer.analyze_product(product_to_check)
     
     os.makedirs("data", exist_ok=True)

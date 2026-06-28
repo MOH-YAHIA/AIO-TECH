@@ -112,56 +112,52 @@ class ProductWorkflowManager:
         clean_1d_vector = [float(x) for x in raw_vector]
 
         # -----------------------------------------------------------------
-        # PHASE 4: ACID Database Commit
+        # PHASE 4: ACID Database Commit (Drop Existing & Fresh Insert)
         # -----------------------------------------------------------------
         try:
-            if cached_product:
-                cached_product.current_price_egp = gemini_data.get("current_price_egp", 0.0)
-                cached_product.description = gemini_data.get("description", "")
-                cached_product.pros = gemini_data.get("pros", [])
-                cached_product.cons = gemini_data.get("cons", [])
-                cached_product.sentiment_summary = gemini_data.get("sentiment_summary", "")
-                cached_product.embedding = clean_1d_vector
-                cached_product.category = gemini_data.get("category", "")
-                cached_product.brand = gemini_data.get("brand", "")
+            # 1. Check if the standardized name already exists (case-insensitive)
+            existing_record = (
+                db.query(ProductAnalysis)
+                .filter(func.upper(ProductAnalysis.name) == standardized_name.upper())
+                .first()
+            )
+
+            if existing_record:
+                print(f"[!] Found existing record for '{standardized_name}'. Dropping it from the database...")
+                db.delete(existing_record)
+                # Flush ensures the delete hits the transaction before the insert happens
+                db.flush() 
+
+            # 2. Construct and insert the fresh record
+            print(f"[+] Inserting fresh record for '{standardized_name}'...")
+            new_product = ProductAnalysis(
+                name=standardized_name,
+                description=gemini_data.get("description", ""),
+                current_price_egp=gemini_data.get("current_price_egp", 0.0),
+                pros=gemini_data.get("pros", []),
+                cons=gemini_data.get("cons", []),
+                sentiment_summary=gemini_data.get("sentiment_summary", ""),
+                embedding=clean_1d_vector,
+                category=gemini_data.get("category", ""),
+                brand=gemini_data.get("brand", ""),
                 
-                # Flat updates
-                cached_product.image_url = extracted_image
-                cached_product.global_rating = extracted_rating
-                cached_product.global_usd_price = extracted_usd_price
-                
-                cached_product.last_ai_update = datetime.now()
-                db.commit()
-                db.refresh(cached_product)
-                active_record = cached_product
-                
-            else:
-                new_product = ProductAnalysis(
-                    name=standardized_name,
-                    description=gemini_data.get("description", ""),
-                    current_price_egp=gemini_data.get("current_price_egp", 0.0),
-                    pros=gemini_data.get("pros", []),
-                    cons=gemini_data.get("cons", []),
-                    sentiment_summary=gemini_data.get("sentiment_summary", ""),
-                    embedding=clean_1d_vector,
-                    category=gemini_data.get("category", ""),
-                    brand=gemini_data.get("brand", ""),
-                    # Flat Inserts
-                    image_url=extracted_image,
-                    global_rating=extracted_rating,
-                    global_usd_price=extracted_usd_price,
-                    last_ai_update = datetime.now()
-                )
-                db.add(new_product)
-                db.commit()
-                db.refresh(new_product)
-                active_record = new_product
-                
-            return {"source": "gemini_plus_serp_live", "data": self._format_for_api(active_record)}
+                # Flat Inserts
+                image_url=extracted_image,
+                global_rating=extracted_rating,
+                global_usd_price=extracted_usd_price,
+                last_ai_update=datetime.now()
+            )
+            
+            db.add(new_product)
+            db.commit()
+            db.refresh(new_product)
+            
+            return {"source": "gemini_plus_serp_live", "data": self._format_for_api(new_product)}
 
         except Exception as db_fault:
             db.rollback()
-            raise ValueError(f"Database operation failed: {str(db_fault)}")
+            print(f"[-] Database operation failed: {db_fault}")
+            raise ValueError(f"Database operation failed: {str(db_fault)}")        
         
 if __name__ == "__main__":
     from src.core.database import SessionLocal

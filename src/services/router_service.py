@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from typing import Literal
 from dotenv import load_dotenv
 
-load_dotenv()
 
 # Define a strict structural invariant for the LLM output
 class RoutingSchema(BaseModel):
@@ -14,9 +13,9 @@ class RoutingSchema(BaseModel):
 
 class IntentRouterEngine:
     def __init__(self):
-        
+        load_dotenv(override=True)
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY_2"))
-        self.model_name = 'gemini-2.5-flash-lite'
+        self.model_name = 'gemini-3.1-flash-lite'
 
     def classify_intent(self, raw_query: str) -> dict:
         """
@@ -60,8 +59,8 @@ if __name__ == "__main__":
     router = IntentRouterEngine()
     test_queries = [
         #"Looking for a gaming laptop that doesn't heat up fast",
-        "iPhne 14 bro Max",
-        "where can i buy tommatoes"
+        "samng galaxy s22",
+        "how can i but catshap"
     ]
     
     for query in test_queries:

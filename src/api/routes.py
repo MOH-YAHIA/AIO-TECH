@@ -152,19 +152,8 @@ def execute_comparison(request: CompareRequest, db: Session = Depends(get_db)):
         
         if "error" in result:
             raise HTTPException(status_code=502, detail=result["error"])
-
-        if result['status']=="non-valid":
-            return {
-                "status": "error", 
-                "routing": "compare", 
-                "details": "non valid product names"
-            }
-        
-        return {
-            "status": "success", 
-            "routing": "compare" ,
-            "payload": result
-        }
+    
+        return {"status": "success", "payload": result}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Comparison Pipeline Crash: {str(e)}")

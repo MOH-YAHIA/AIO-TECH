@@ -37,8 +37,8 @@ class SearchExtractionSchema(BaseModel):
 class SearchWorkflowManager:
     def __init__(self):
         # The genai SDK automatically reads your GEMINI_API_KEY environment variable
-        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY_2"))
-        self.model_name = 'gemini-2.5-flash'
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model_name = 'gemini-3.1-flash-lite'
         self.embedding_model = VectorEmbedding()
 
     def _extract_query_metadata(self, raw_user_query: str) -> dict:
