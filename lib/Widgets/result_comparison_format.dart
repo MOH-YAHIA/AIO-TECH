@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/app_colors.dart';
+
 class ResultComparisonFormat extends StatelessWidget {
   final Map<String, dynamic> data;
 
@@ -41,7 +43,7 @@ class ResultComparisonFormat extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: AppColors.secondarySurface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -55,7 +57,7 @@ class ResultComparisonFormat extends StatelessWidget {
                     const Text("Overall Winner",
                         style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: AppColors.secondaryText,
                             fontWeight: FontWeight.bold)),
                     Text(winner,
                         style: const TextStyle(
@@ -75,6 +77,7 @@ class ResultComparisonFormat extends StatelessWidget {
           elevation: 2,
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -113,7 +116,7 @@ class ResultComparisonFormat extends StatelessWidget {
         // ── Feature Breakdown ───────────────────────────────────
         const Text("Feature Breakdown",
             style:
-            TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: AppColors.secondaryText)),
         const SizedBox(height: 8),
         ListView.builder(
           shrinkWrap: true,
@@ -190,7 +193,7 @@ class ResultComparisonFormat extends StatelessWidget {
               children: [
                 Text(name,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13),
+                        fontWeight: FontWeight.bold, fontSize: 13,color: Colors.white),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),

@@ -3,7 +3,6 @@ import 'package:aio_tech/Widgets/auth_fields.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_services.dart';
 import '../utils/app_colors.dart';
-// Note: We no longer need constants.dart here for the keys/controllers
 import '../utils/validations.dart';
 
 class Login extends StatefulWidget {
@@ -20,8 +19,8 @@ class Login extends StatefulWidget {
   State<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
-  // 1. Declare unique keys and controllers specifically for the Login screen
+class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
+  // Declare unique keys and controllers specifically for the Login screen
   final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -31,8 +30,32 @@ class _LoginState extends State<Login> {
   bool _isLoading = false;
   String _error = '';
 
+  // Lazy initialization of Animation controllers.
+  // Using 'late final' with an inline initializer prevents LateInitializationError
+  // during Hot Reloads, making the code much more robust and safer to develop.
+  late final AnimationController _bgController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  )..repeat(reverse: true);
+
+  late final Animation<Alignment> _topAlignment = AlignmentTween(
+    begin: Alignment.topLeft,
+    end: Alignment.topRight,
+  ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOut));
+
+  late final Animation<Alignment> _bottomAlignment = AlignmentTween(
+    begin: Alignment.bottomRight,
+    end: Alignment.bottomLeft,
+  ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeInOut));
+
+  @override
+  void initState() {
+    super.initState();
+    // Animation initializations are now handled lazily above.
+  }
+
   void _handleLogin() async {
-    // 2. Use the local key
+    // Use the local key to validate form fields
     if (!_loginFormKey.currentState!.validate()) {
       return;
     }
@@ -60,6 +83,7 @@ class _LoginState extends State<Login> {
 
   @override
   void dispose() {
+    _bgController.dispose(); // Dispose the animation controller
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -68,111 +92,152 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 80),
-                const Text(
-                  "Login",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
-                ),
-                const SizedBox(height: 60),
-                Form(
-                  // 5. Attach the local key here
-                  key: _loginFormKey,
-                  child: Column(
-                    children: [
-                      AuthFields(
-                        // 6. Attach local controller
-                        controller: _emailController,
-                        validator: Validators.validateEmail,
-                        label: "Email",
-                        suffixIcon: const Icon(Icons.email),
-                      ),
-                      const SizedBox(height: 20),
-                      AuthFields(
-                        // 6. Attach local controller
-                        controller: _passwordController,
-                        validator: Validators.validatePassword,
-                        label: "Password",
-                        obscure: _obscurePassword,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                      if (_error.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Text(
-                            _error,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text(
-                              "Forgot Password?",
-                              style: TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              widget.onNavigateToSignUp();
-                            },
-                            child: const Text(
-                              "Create new Account",
-                              style: TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      _isLoading
-                          ? const CircularProgressIndicator(color: AppColors.buttonBackground)
-                          : SizedBox(
-                        width: 200,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _handleLogin,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.buttonBackground,
-                          ),
-                          child: const Text(
-                            "Confirm",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
+      // We use a Stack to place the main content over the animated background
+      body: Stack(
+        children: [
+          // Animated Gradient Background Layer
+          AnimatedBuilder(
+            animation: _bgController,
+            builder: (context, child) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: const [
+                      Color(0xFF0C133D), // Dark indigo (Top)
+                      Color(0xFF18498D), // Deep blue (Middle)
+                      Color(0xFF2CB5E8), // Cyan/Light Blue (Bottom)
                     ],
+                    begin: _topAlignment.value,
+                    end: _bottomAlignment.value,
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
-              ],
+              );
+            },
+          ),
+
+          // Main content layer
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: Column(
+                      spacing: 30,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 80),
+                        const Text(
+                          "Login",
+                          // Changed title to white for better contrast against dark background
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40, color: Colors.white),
+                        ),
+                        const SizedBox(height: 60),
+
+                        Form(
+                          // Attach the local key here
+                          key: _loginFormKey,
+                          child: Column(
+                            children: [
+                              AuthFields(
+                                // Attach local controller
+                                controller: _emailController,
+                                validator: Validators.validateEmail,
+                                label: "Email",
+                                // Styled icon to match the new dark theme
+                                suffixIcon: const Icon(Icons.email, color: Colors.white70),
+                              ),
+                              const SizedBox(height: 20),
+                              AuthFields(
+                                // Attach local controller
+                                controller: _passwordController,
+                                validator: Validators.validatePassword,
+                                label: "Password",
+                                obscure: _obscurePassword,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                    color: Colors.white70,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
+                              ),
+
+                              if (_error.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    _error,
+                                    style: const TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              SizedBox(height: 30,),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {},
+                                    child: const Text(
+                                      "Forgot Password?",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      widget.onNavigateToSignUp();
+                                    },
+                                    child: const Text(
+                                      "Create new Account",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              _isLoading
+                                  ? const CircularProgressIndicator(color: AppColors.buttonBackground)
+                                  : SizedBox(
+                                width: 200,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed: _handleLogin,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.buttonBackground,
+                                  ),
+                                  child: const Text(
+                                    "Confirm",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

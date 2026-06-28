@@ -20,6 +20,7 @@ class ProductSearchResult extends StatelessWidget {
 
     return Card(
       elevation: 3,
+      color: Colors.white.withOpacity(0.8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(16),

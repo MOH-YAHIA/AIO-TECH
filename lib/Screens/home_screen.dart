@@ -60,8 +60,18 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = false;
       if (result['success']) {
-        final responseData = result['data'];
-        _apiResult = responseData['payload'] ?? responseData['data'] ?? responseData;
+        // The backend always wraps responses as:
+        // { status, routing, payload: { source, data: <actual content> } }
+        // 'detailed' mode: data is a List  → renders multiple cards
+        // 'product'  mode: data is a Map   → renders one card
+        // Walk payload → data to reach the real content in both cases.
+        dynamic unwrapped = result['data'];
+        for (final key in ['payload', 'data']) {
+          if (unwrapped is Map && unwrapped.containsKey(key)) {
+            unwrapped = unwrapped[key];
+          }
+        }
+        _apiResult = unwrapped;
       } else {
         _errorMessage = result['message'];
       }
@@ -119,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
             // English Comment: Set to 1 so the animation only plays once and stops
-            totalRepeatCount: 1,
+            totalRepeatCount: 3,
             // English Comment: If the user taps the text, it will instantly finish typing
             displayFullTextOnTap: true,
             // English Comment: Ensures it doesn't pause before starting

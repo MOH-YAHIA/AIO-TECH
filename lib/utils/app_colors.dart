@@ -8,7 +8,7 @@ class AppColors {
   static const Color backGround= Color(0xFF0f1e45);
   // Brand & Main Blues
   static const Color primaryBlue = Color(0xFF3B72FF);
-  static const Color secondaryBlue = Color(0xFF5B9AFF);
+  static const Color secondaryBlue = Color(0xFFB0C7F1);
   static const Color brandBlue = Color(0xFF4D8BFF);
 
   // Backgrounds & Surfaces

@@ -124,8 +124,8 @@ class _HomeSearchState extends State<HomeSearch> {
                 onChanged: (value) {
                   setState(() {
                     selectedModel = value;
-                    if (value == 'product' && widget.controller.text.length > 20) {
-                      widget.controller.text = widget.controller.text.substring(0, 20);
+                    if (value == 'product' && widget.controller.text.length > 35) {
+                      widget.controller.text = widget.controller.text.substring(0, 35);
                     }
                   });
                 },
