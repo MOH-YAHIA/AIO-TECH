@@ -4,12 +4,14 @@ from dotenv import load_dotenv
 import os 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from google import genai  # Replaced ollama with the official Google GenAI SDK
+from google import genai  
 from pydantic import BaseModel, Field
+from datetime import datetime, timezone
+
 
 from src.models.product import ProductAnalysis
 from src.services.embedding_service import VectorEmbedding
-
+from src.models.user_product import UserProductAnalysis
 
 load_dotenv()
 
@@ -81,7 +83,7 @@ class SearchWorkflowManager:
         except Exception as e:
             raise RuntimeError(f"[Extraction Error] Failed to parse query metadata using {self.model_name}: {str(e)}")
 
-    def recommend_on_description(self, db: Session, user_intent: str, limit: int = 3):
+    def recommend_on_description(self, db: Session, user_intent: str ,user_id: int, limit: int = 3):
         """
         Executes hybrid querying pipeline: 
         Metadata Extraction -> SQL Hard Boundary Filtering -> Vector Space Neighbor Scan.
@@ -142,7 +144,14 @@ class SearchWorkflowManager:
                     "last_ai_update": product.last_ai_update.isoformat() if product.last_ai_update else None
                 }
             )
-                
+            user_log = UserProductAnalysis(
+                UserId=user_id,
+                ProductAnalysisId=product.id,
+                SavedAt=datetime.now(timezone.utc)
+            )
+            db.merge(user_log)
+
+        db.commit()       
         return recommendations
 
 if __name__ == "__main__":

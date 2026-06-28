@@ -1,9 +1,11 @@
 import json
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.models.product import ProductAnalysis
+from src.models.user_product import UserProductAnalysis
+
 from src.services.gemini_service import DeepDiveAnalyzer
 from src.services.embedding_service import VectorEmbedding
 from src.services.serp_service import GlobalProductDetailsExtractor
@@ -37,7 +39,7 @@ class ProductWorkflowManager:
             "last_ai_update": product.last_ai_update.isoformat() if product.last_ai_update else None
         }
 
-    def process_deep_dive(self, db: Session, user_query: str):
+    def process_deep_dive(self, db: Session, user_query: str, user_id:int):
         print(f"Analyzing product discovery request for: '{user_query}'")
         
         # 1. Cache Check
@@ -57,6 +59,15 @@ class ProductWorkflowManager:
             is_fresh = (datetime.now() - cached_product.last_ai_update) < timedelta(hours=self.cache_expiration_hours)
             if is_fresh:
                 print("Cache Hit! Serving fresh data immediately.")
+
+                user_log = UserProductAnalysis(
+                    UserId=user_id,
+                    ProductAnalysisId=cached_product.id,
+                    SavedAt=datetime.now(timezone.utc)
+                )
+                db.merge(user_log)
+                db.commit()
+
                 return {"source": "database_cache", "data": self._format_for_api(cached_product)}
 
         # -----------------------------------------------------------------
@@ -149,6 +160,15 @@ class ProductWorkflowManager:
             )
             
             db.add(new_product)
+            db.flush()
+
+            user_log = UserProductAnalysis(
+                UserId=user_id,
+                ProductAnalysisId=new_product.id,
+                SavedAt=datetime.now(timezone.utc)
+            )
+            db.merge(user_log)
+
             db.commit()
             db.refresh(new_product)
             

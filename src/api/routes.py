@@ -31,10 +31,12 @@ class DeepDiveRequest(BaseModel):
 class CompareRequest(BaseModel):
     product_a_query: str
     product_b_query: str
+    user_id: int
 
 class SmartDispatchRequest(BaseModel):
     query_string: str = Field(..., description="Raw unstructured string from user query bar")
     limit: int = Field(3, description="Pagination bounds constraint")
+    user_id: int = Field(description="the active user id")
 
 # =====================================================================
 #  ENDPOINTS
@@ -65,7 +67,7 @@ def execute_smart_dispatch(request: SmartDispatchRequest, db: Session = Depends(
         elif intent == "specific_product":
            
             # Execute database retrieval targeting exact string match (Similarity = 1.0)
-            result = deep_dive_manager.process_deep_dive(db=db, user_query=cleaned_query)
+            result = deep_dive_manager.process_deep_dive(db=db, user_query=cleaned_query,user_id=request.user_id)
             
             if "error" in result:
                 raise HTTPException(status_code=502, detail=result["error"])
@@ -81,6 +83,7 @@ def execute_smart_dispatch(request: SmartDispatchRequest, db: Session = Depends(
             results = semantic_search_manager.recommend_on_description(
                 db=db, 
                 user_intent=cleaned_query.lower(), 
+                user_id=request.user_id,
                 limit=request.limit
             )
             
@@ -147,7 +150,8 @@ def execute_comparison(request: CompareRequest, db: Session = Depends(get_db)):
         result = comparison_manager.generate_comparison(
             db=db,
             product_a_query=request.product_a_query,
-            product_b_query=request.product_b_query
+            product_b_query=request.product_b_query,
+            user_id=request.user_id
         )
         
         if "error" in result:

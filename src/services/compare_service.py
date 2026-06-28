@@ -62,7 +62,7 @@ class ComparisonWorkflowManager:
         # Instantiate the Product Manager to handle database/fetching duties
         self.product_manager = ProductWorkflowManager()
 
-    def generate_comparison(self, db: Session, product_a_query: str, product_b_query: str) -> dict:
+    def generate_comparison(self, db: Session, product_a_query: str, product_b_query: str, user_id: int) -> dict:
         """
         Orchestrates the entire comparison flow: Fetches deep-dive data for both products 
         (hitting the cache or APIs), and then synthesizes a head-to-head AI comparison.
@@ -70,14 +70,14 @@ class ComparisonWorkflowManager:
 
         # 1. Fetch or generate the structured data for Product A
         print(f"[Comparison Engine] Fetching data for Product A: '{product_a_query}'")
-        res_a = self.product_manager.process_deep_dive(db=db, user_query=product_a_query)
+        res_a = self.product_manager.process_deep_dive(db=db, user_query=product_a_query, user_id=user_id)
         if "error" in res_a:
             raise ValueError(f"Failed to retrieve Product A: {res_a['error']}")
         product_a_data = res_a["data"]
 
         # 2. Fetch or generate the structured data for Product B
         print(f"[Comparison Engine] Fetching data for Product B: '{product_b_query}'")
-        res_b = self.product_manager.process_deep_dive(db=db, user_query=product_b_query)
+        res_b = self.product_manager.process_deep_dive(db=db, user_query=product_b_query, user_id=user_id)
         if "error" in res_b:
             raise ValueError(f"Failed to retrieve Product B: {res_b['error']}")
         product_b_data = res_b["data"]
