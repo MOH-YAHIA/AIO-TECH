@@ -1,4 +1,5 @@
 import 'package:aio_tech/utils/app_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../Widgets/auth_fields.dart';
 import '../services/auth_services.dart';
@@ -121,8 +122,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 80),
-                    const Text(
-                      "Signup",
+                    Text(
+                      tr('signup'),
                       // Changed to white for dark background contrast
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40, color: Colors.white),
                     ),
@@ -140,17 +141,17 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                 validator: (value) => value == null || value.isEmpty
                                     ? "Name is required"
                                     : null,
-                                label: "Full Name",
+                                label: tr('full name'),
                                 suffixIcon: const Icon(Icons.account_circle, color: Colors.white70),
                               ),
                               AuthFields(
                                 controller: _emailController,
                                 validator: Validators.validateEmail,
-                                label: "Email",
+                                label: tr('email'),
                                 suffixIcon: const Icon(Icons.email, color: Colors.white70),
                               ),
                               AuthFields(
-                                label: "Password",
+                                label: tr('password'),
                                 obscure: _obscurePassword,
                                 controller: _passwordController,
                                 validator: Validators.validatePassword,
@@ -169,7 +170,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                 ),
                               ),
                               AuthFields(
-                                label: "Confirm your Password",
+                                label: tr('confirm your password'),
                                 obscure: _obscurePassword,
                                 controller: _confirmPasswordController,
                                 validator: (value) {
@@ -225,7 +226,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                           iconEnabledColor: Colors.white70,
                                           style: const TextStyle(color: Colors.white, fontSize: 16),
                                           hint: Text(
-                                            "Gender",
+                                            tr('gender'),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 20,
@@ -233,14 +234,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                             ),
                                           ),
                                           isExpanded: true,
-                                          items: const [
+                                          items:  [
                                             DropdownMenuItem(
                                               value: "Man",
-                                              child: Text("Man"),
+                                              child: Text(tr('man')),
                                             ),
                                             DropdownMenuItem(
                                               value: "Woman",
-                                              child: Text("Woman"),
+                                              child: Text(tr('woman')),
                                             ),
                                           ],
                                           onChanged: (value) {
@@ -284,7 +285,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                           iconEnabledColor: Colors.white70,
                                           style: const TextStyle(color: Colors.white, fontSize: 16),
                                           hint: Text(
-                                            "Age",
+                                            tr('age'),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 20,
@@ -333,8 +334,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                     backgroundColor:
                                     AppColors.buttonBackground,
                                   ),
-                                  child: const Text(
-                                    "Create Account",
+                                  child: Text(
+                                    tr('create new'),
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ),

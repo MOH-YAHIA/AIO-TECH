@@ -1,5 +1,6 @@
 import 'package:aio_tech/Screens/sign_up.dart';
 import 'package:aio_tech/Widgets/auth_fields.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_services.dart';
 import '../utils/app_colors.dart';
@@ -129,10 +130,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 80),
-                        const Text(
-                          "Login",
+                        Text(tr('login'),
                           // Changed title to white for better contrast against dark background
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40, color: Colors.white),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 40, color: Colors.white),
                         ),
                         const SizedBox(height: 60),
 
@@ -145,7 +145,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                                 // Attach local controller
                                 controller: _emailController,
                                 validator: Validators.validateEmail,
-                                label: "Email",
+                                label: tr('email'),
                                 // Styled icon to match the new dark theme
                                 suffixIcon: const Icon(Icons.email, color: Colors.white70),
                               ),
@@ -154,7 +154,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                                 // Attach local controller
                                 controller: _passwordController,
                                 validator: Validators.validatePassword,
-                                label: "Password",
+                                label: tr('password'),
                                 obscure: _obscurePassword,
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -181,36 +181,21 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                                   ),
                                 ),
                               SizedBox(height: 30,),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  TextButton(
-                                    onPressed: () {},
-                                    child: const Text(
-                                      "Forgot Password?",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white,
-                                      ),
-                                    ),
-                                  ),
+
                                   TextButton(
                                     onPressed: () {
                                       widget.onNavigateToSignUp();
                                     },
-                                    child: const Text(
-                                      "Create new Account",
-                                      style: TextStyle(
+                                    child: Text(
+                                      tr('create new'),
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         decoration: TextDecoration.underline,
                                         decorationColor: Colors.white,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-
+                              SizedBox(height: 20,),
                               _isLoading
                                   ? const CircularProgressIndicator(color: AppColors.buttonBackground)
                                   : SizedBox(
@@ -221,8 +206,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.buttonBackground,
                                   ),
-                                  child: const Text(
-                                    "Confirm",
+                                  child: Text(
+                                    tr('confirm'),
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ),

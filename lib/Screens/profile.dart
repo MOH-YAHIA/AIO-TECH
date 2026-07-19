@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -115,29 +116,29 @@ class _ProfileState extends State<Profile> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Edit Profile'),
+              title:  Text(tr('edit profile')),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(labelText: 'Full Name'),
+                      decoration:  InputDecoration(labelText: tr('full name')),
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration:  InputDecoration(labelText: tr('email')),
                       enabled: !isLoading,
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: selectedGender,
-                      decoration: const InputDecoration(labelText: 'Gender'),
-                      items: const [
-                        DropdownMenuItem(value: "Man", child: Text("Man")),
-                        DropdownMenuItem(value: "Woman", child: Text("Woman")),
+                      decoration:  InputDecoration(labelText: tr('gender')),
+                      items: [
+                        DropdownMenuItem(value: "Man", child: Text(tr('man'))),
+                        DropdownMenuItem(value: "Woman", child: Text(tr('woman'))),
                       ],
                       onChanged: isLoading
                           ? null
@@ -148,7 +149,7 @@ class _ProfileState extends State<Profile> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField<int>(
                       value: selectedAge,
-                      decoration: const InputDecoration(labelText: 'Age'),
+                      decoration:  InputDecoration(labelText:  tr('age')),
                       items: ages.map((age) {
                         return DropdownMenuItem<int>(
                           value: age,
@@ -167,7 +168,7 @@ class _ProfileState extends State<Profile> {
               actions: [
                 TextButton(
                   onPressed: isLoading ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child:  Text(tr('cancel')),
                 ),
                 ElevatedButton(
                   onPressed: isLoading
@@ -209,7 +210,7 @@ class _ProfileState extends State<Profile> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Confirm'),
+                      :  Text(tr('confirm')),
                 ),
               ],
             );
@@ -238,7 +239,7 @@ class _ProfileState extends State<Profile> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Change Password'),
+              title:  Text(tr('change password')),
               content: SingleChildScrollView(
                 child: Form(
                   key: formKey,
@@ -253,7 +254,7 @@ class _ProfileState extends State<Profile> {
                             ? 'Current password is required'
                             : null,
                         decoration: InputDecoration(
-                          labelText: 'Current Password',
+                          labelText: tr('current password'),
                           suffixIcon: IconButton(
                             icon: Icon(
                               obscureCurrent
@@ -273,7 +274,7 @@ class _ProfileState extends State<Profile> {
                         enabled: !isLoading,
                         validator: Validators.validatePassword,
                         decoration: InputDecoration(
-                          labelText: 'New Password',
+                          labelText: tr('new password'),
                           suffixIcon: IconButton(
                             icon: Icon(
                               obscureNew
@@ -299,8 +300,8 @@ class _ProfileState extends State<Profile> {
                             return 'Passwords do not match';
                           return null;
                         },
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm New Password',
+                        decoration: InputDecoration(
+                          labelText: tr('confirm new password'),
                         ),
                       ),
                     ],
@@ -310,7 +311,7 @@ class _ProfileState extends State<Profile> {
               actions: [
                 TextButton(
                   onPressed: isLoading ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(tr('cancel')),
                 ),
                 ElevatedButton(
                   onPressed: isLoading
@@ -352,7 +353,7 @@ class _ProfileState extends State<Profile> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Confirm'),
+                      : Text(tr('confirm')),
                 ),
               ],
             );
@@ -439,19 +440,19 @@ class _ProfileState extends State<Profile> {
                           children: [
                             _buildProfileRow(
                               Icons.person,
-                              'Name',
+                              tr('full name'),
                               userData['fullName'] ?? '',
                             ),
                             const Divider(),
                             _buildProfileRow(
                               Icons.email,
-                              'Email',
+                              tr('email'),
                               userData['email'] ?? '',
                             ),
                             const Divider(),
                             _buildProfileRow(
                               Icons.cake,
-                              'Age',
+                              tr('age'),
                               (userData['age'] as int? ?? 0) != 0
                                   ? userData['age'].toString()
                                   : 'Not set',
@@ -459,7 +460,7 @@ class _ProfileState extends State<Profile> {
                             const Divider(),
                             _buildProfileRow(
                               Icons.wc,
-                              'Gender',
+                              tr('gender'),
                               userData['gender'] ?? '',
                             ),
                           ],
@@ -473,8 +474,8 @@ class _ProfileState extends State<Profile> {
                       child: ElevatedButton.icon(
                         onPressed: () => _showEditProfileDialog(userData),
                         icon: const Icon(Icons.edit, color: Colors.white),
-                        label: const Text(
-                          'Edit Profile',
+                        label:  Text(
+                          tr('edit profile'),
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -496,7 +497,7 @@ class _ProfileState extends State<Profile> {
                           color: AppColors.secondarySurface,
                         ),
                         label: Text(
-                          'Change Password',
+                          tr('change password'),
                           style: TextStyle(
                             color: AppColors.secondarySurface,
                             fontSize: 16,

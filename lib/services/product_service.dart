@@ -11,18 +11,18 @@ class ProductService {
   // 1. Unified Dispatch API for Home Screen Search
   Future<Map<String, dynamic>> dispatchSearch({
     required String query,
-    required String serviceName, // 'product' or 'detailed'
+    required int userId,
   }) async {
     try {
-      debugPrint("Sending request to FastAPI... (Service: $serviceName)");
+      debugPrint("Sending request to FastAPI...");
 
       final response = await http.post(
         Uri.parse('$baseUrl/dispatch'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'query_string': query,
-          'service_name': serviceName,
-          'limit': 3
+          'limit': 3,
+          'user_id': userId,
         }),
       ).timeout(
         const Duration(seconds: 60), // Set a 60-second maximum wait time
@@ -55,6 +55,7 @@ class ProductService {
   Future<Map<String, dynamic>> compareDevices({
     required String productA,
     required String productB,
+    required int userId,
   }) async {
     try {
       debugPrint("Sending Compare request to FastAPI...");
@@ -65,6 +66,7 @@ class ProductService {
         body: jsonEncode({
           'product_a_query': productA,
           'product_b_query': productB,
+          'user_id': userId,
         }),
       ).timeout(
         const Duration(seconds: 60), // Set a 60-second maximum wait time

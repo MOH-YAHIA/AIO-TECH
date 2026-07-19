@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -86,6 +87,50 @@ class AuthService {
   Future<String?> getFullName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('full_name');
+  }
+
+  // Decodes the user ID directly from the stored JWT token payload.
+  // No extra API call or saved field needed — the ID is always inside the token.
+  Future<int> getUserId() async {
+    final token = await getToken();
+    if (token == null || token.isEmpty) return 0;
+    return _decodeUserIdFromToken(token);
+  }
+
+  int _decodeUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return 0;
+
+      // Pad the base64 payload to a valid length before decoding
+      String payload = parts[1];
+      switch (payload.length % 4) {
+        case 2: payload += '=='; break;
+        case 3: payload += '=';  break;
+      }
+
+      final decoded = jsonDecode(
+        utf8.decode(base64Url.decode(payload)),
+      ) as Map<String, dynamic>;
+
+      // Log all claims once so you can confirm the correct key
+      debugPrint('[JWT Claims]: $decoded');
+
+      // .NET Identity embeds the user ID under this standard claim URI.
+      // Falls back to common alternatives if the backend uses a shorter key.
+      final id =
+          decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ??
+              decoded['sub'] ??
+              decoded['id'] ??
+              decoded['userId'] ??
+              decoded['nameid'] ??
+              0;
+
+      return int.tryParse(id.toString()) ?? 0;
+    } catch (e) {
+      debugPrint('[JWT Decode Error]: $e');
+      return 0;
+    }
   }
 
   Future<bool> isLoggedIn() async {

@@ -16,10 +16,10 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   runApp(
     EasyLocalization(
-      supportedLocales: [Locale('en', 'US'), Locale('ar', 'EG')],
+      supportedLocales: const [Locale('en', 'US'), Locale('ar', 'EG')],
       path: 'assets/translations',
-      fallbackLocale: Locale('en', 'US'),
-      child: MyApp(),
+      fallbackLocale: const Locale('en', 'US'),
+      child: const MyApp(),
     ),
   );
 }
@@ -52,14 +52,14 @@ class _MainWrapperState extends State<MainWrapper> {
   final AuthService _authService = AuthService();
 
   // Increments on logout → forces Login, SignUp, Profile to fully recreate
-  // (disposes old State, clears controllers, clears cached futures).
   int _sessionKey = 0;
 
   // Increments every time the user navigates TO Profile, or after login/logout.
-  // Profile watches this via didUpdateWidget and re-fetches SharedPreferences
-  // whenever it changes — so it always shows current data regardless of when
-  // IndexedStack first built it relative to _saveSession completing.
   int _profileRefreshTrigger = 0;
+
+  // --- Search History Triggers ---
+  String? _homeInitialQuery;
+  int _homeSearchTrigger = 0;
 
   @override
   void initState() {
@@ -78,9 +78,6 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   void _onLoginSuccess() {
-    // _saveSession has already fully completed before login() returned,
-    // so incrementing the trigger here guarantees Profile re-reads
-    // SharedPreferences AFTER all new account data is on disk.
     setState(() {
       _profileRefreshTrigger++;
       _currentIndex = 2;
@@ -90,18 +87,25 @@ class _MainWrapperState extends State<MainWrapper> {
   Future<void> _onLogout() async {
     await _authService.logout();
     setState(() {
-      _sessionKey++;            // recreate Login, SignUp, Profile widgets
-      _profileRefreshTrigger++; // reset trigger counter for the new session
+      _sessionKey++;
+      _profileRefreshTrigger++;
       _currentIndex = 0;
     });
   }
 
-  // Increments _profileRefreshTrigger whenever the user explicitly opens
-  // Profile (index 6), so data is always fresh after an Edit Profile update.
   void onTap(int index) {
     setState(() {
       if (index == 6) _profileRefreshTrigger++;
       _currentIndex = index;
+    });
+  }
+
+  // Handle clicking a product from the drawer history
+  void _onSearchProduct(String productName) {
+    setState(() {
+      _homeInitialQuery = productName;
+      _homeSearchTrigger++;
+      _currentIndex = 2; // Switch to HomeScreen
     });
   }
 
@@ -115,10 +119,14 @@ class _MainWrapperState extends State<MainWrapper> {
       key: ValueKey('signup_$_sessionKey'),
       onSignUpSuccess: _onLoginSuccess,
     ),
-    HomeScreen(),
-    WatchList(),
-    Dashboard(),
-    Compare(),
+    // Pass the trigger data to the HomeScreen
+    HomeScreen(
+      initialQuery: _homeInitialQuery,
+      searchTriggerId: _homeSearchTrigger,
+    ),
+    const WatchList(),
+    const Dashboard(),
+    const Compare(),
     Profile(
       key: ValueKey('profile_$_sessionKey'),
       refreshTrigger: _profileRefreshTrigger,
@@ -177,6 +185,11 @@ class _MainWrapperState extends State<MainWrapper> {
             } else {
               onTap(index);
             }
+          },
+          // Connect the new callback here
+          onSearchProduct: (productName) {
+            Navigator.pop(context); // Close the drawer first
+            _onSearchProduct(productName);
           },
         ),
       ),

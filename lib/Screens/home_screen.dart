@@ -1,15 +1,24 @@
+import 'dart:async';
 import 'package:aio_tech/Widgets/home_search.dart';
 import 'package:aio_tech/Widgets/product_search_result.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../services/auth_services.dart';
 import '../Widgets/star_logo.dart';
 import '../services/product_service.dart';
 import '../Widgets/new_chat.dart';
 import '../utils/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? initialQuery;
+  final int searchTriggerId;
+
+  const HomeScreen({
+    super.key,
+    this.initialQuery,
+    this.searchTriggerId = 0,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _device1Controller = TextEditingController();
   final ProductService _productService = ProductService();
+  final AuthService _authService = AuthService();
 
   bool _hasSearched = false;
   bool _isLoading = false;
@@ -27,10 +37,55 @@ class _HomeScreenState extends State<HomeScreen> {
   dynamic _apiResult;
   String _errorMessage = "";
 
+  // --- Loading state feedback ---
+  int _elapsedSeconds = 0;
+  Timer? _loadingTimer;
+
+  static const List<String> _loadingMessages = [
+    "Connecting to server...",
+    "Waking up the AI engine...",
+    "Routing your query...",
+    "Scanning the market...",
+    "Analyzing products...",
+    "Almost there, hang tight...",
+    "Still working, the server is busy...",
+    "Fetching the best results for you...",
+  ];
+
+  String get _currentLoadingMessage {
+    final index = (_elapsedSeconds ~/ 5).clamp(0, _loadingMessages.length - 1);
+    return _loadingMessages[index];
+  }
+
   @override
   void initState() {
     super.initState();
     _device1Controller.addListener(_updateButtonState);
+    // Check for query passed immediately on creation
+    if (widget.initialQuery != null && widget.searchTriggerId > 0) {
+      _checkInitialQuery();
+    }
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Listen for incoming searches when this screen is already mounted (from Drawer)
+    if (widget.searchTriggerId != oldWidget.searchTriggerId && widget.initialQuery != null) {
+      _checkInitialQuery();
+    }
+  }
+
+  void _checkInitialQuery() {
+    if (widget.initialQuery!.isNotEmpty) {
+      _device1Controller.text = widget.initialQuery!;
+      // Wait for the UI frame to build, then perform the search automatically
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _performSearch();
+        }
+      });
+    }
   }
 
   void _updateButtonState() {
@@ -40,10 +95,31 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _device1Controller.dispose();
+    _loadingTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _performSearch(String modelType) async {
+  void _startLoadingTimer() {
+    _elapsedSeconds = 0;
+    _loadingTimer?.cancel();
+    _loadingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _elapsedSeconds++);
+    });
+  }
+
+  void _stopLoadingTimer() {
+    _loadingTimer?.cancel();
+    _loadingTimer = null;
+    _elapsedSeconds = 0;
+  }
+
+  Future<void> _performSearch() async {
+    final int userId = await _authService.getUserId();
+
     setState(() {
       _hasSearched = true;
       _isLoading = true;
@@ -52,19 +128,18 @@ class _HomeScreenState extends State<HomeScreen> {
       _device1Controller.clear();
     });
 
+    _startLoadingTimer();
+
     final result = await _productService.dispatchSearch(
       query: _lastQuery,
-      serviceName: modelType,
+      userId: userId,
     );
+
+    _stopLoadingTimer();
 
     setState(() {
       _isLoading = false;
       if (result['success']) {
-        // The backend always wraps responses as:
-        // { status, routing, payload: { source, data: <actual content> } }
-        // 'detailed' mode: data is a List  → renders multiple cards
-        // 'product'  mode: data is a Map   → renders one card
-        // Walk payload → data to reach the real content in both cases.
         dynamic unwrapped = result['data'];
         for (final key in ['payload', 'data']) {
           if (unwrapped is Map && unwrapped.containsKey(key)) {
@@ -107,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Text(
-          "Smart Market Radar".tr(),
+          "Smart Market Radar",
           style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -121,52 +196,30 @@ class _HomeScreenState extends State<HomeScreen> {
           child: AnimatedTextKit(
             animatedTexts: [
               TypewriterAnimatedText(
-                "Find the best electronics deals across Egypt using our intelligent scanner.",
+                tr('welcome home'),
                 textStyle: const TextStyle(fontSize: 18, color: AppColors.primaryText),
                 textAlign: TextAlign.center,
-                // English Comment: You can adjust the typing speed here
                 speed: const Duration(milliseconds: 100),
               ),
             ],
-            // English Comment: Set to 1 so the animation only plays once and stops
             totalRepeatCount: 3,
-            // English Comment: If the user taps the text, it will instantly finish typing
             displayFullTextOnTap: true,
-            // English Comment: Ensures it doesn't pause before starting
             pause: const Duration(milliseconds: 0),
           ),
         ),
         const SizedBox(height: 60),
-
         Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
             child: HomeSearch(
               showSendButton: true,
-              searchHint: "Describe what you want",
+              searchHint: tr('search home'),
               controller: _device1Controller,
               onSearch: _performSearch,
             ),
           ),
         ),
-
         const SizedBox(height: 40),
-
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: Row(
-              children: [
-                const Icon(Icons.trending_up, color: Colors.orange, size: 30),
-                const SizedBox(width: 10),
-                const Text(
-                  "Recommendations",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold,color: AppColors.primaryText),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -189,8 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-
-        // Wrap the list items in a Center+ConstrainedBox to keep the chat view centered on laptops
         Expanded(
           child: Center(
             child: ConstrainedBox(
@@ -198,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // User Query Chat Bubble
+                  // User query bubble
                   Align(
                     alignment: Alignment.centerRight,
                     child: Container(
@@ -220,28 +271,44 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
 
                   if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
+                    _buildLoadingState()
                   else if (_errorMessage.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.all(20),
-                      color: Colors.red.shade50,
-                      child: Text("Error: $_errorMessage", style: const TextStyle(color: Colors.red)),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.red),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                   else if (_apiResult != null)
                       if (_apiResult is List)
                         ...(_apiResult as List).map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: ProductSearchResult(data: item as Map<String, dynamic>),
+                          child: ProductSearchResult(
+                              data: item as Map<String, dynamic>),
                         ))
                       else if (_apiResult is Map<String, dynamic>)
-                        ProductSearchResult(data: _apiResult as Map<String, dynamic>)
+                        ProductSearchResult(
+                            data: _apiResult as Map<String, dynamic>),
                 ],
               ),
             ),
           ),
         ),
 
-        // Footer Search Box
+        // Footer search bar
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
@@ -255,7 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             ],
           ),
-          // RESPONSIVE FIX: Center and constrain the footer search bar too
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
@@ -264,12 +330,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 searchHint: "Search again...",
                 controller: _device1Controller,
                 isCompact: true,
-                onSearch: (model) => _performSearch('detailed'),
+                onSearch: _performSearch,
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        children: [
+          const SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(strokeWidth: 3),
+          ),
+          const SizedBox(height: 24),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            child: Text(
+              _currentLoadingMessage,
+              key: ValueKey(_currentLoadingMessage),
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.primaryText,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "${_elapsedSeconds}s",
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.primaryText.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

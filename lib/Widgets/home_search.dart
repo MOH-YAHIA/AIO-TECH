@@ -5,8 +5,7 @@ class HomeSearch extends StatefulWidget {
   final String searchHint;
   final TextEditingController controller;
   final bool showSendButton;
-  final Function(String)? onSearch;
-
+  final VoidCallback? onSearch;
   final bool isCompact;
 
   const HomeSearch({
@@ -23,8 +22,6 @@ class HomeSearch extends StatefulWidget {
 }
 
 class _HomeSearchState extends State<HomeSearch> {
-  String? selectedModel = 'detailed';
-
   @override
   Widget build(BuildContext context) {
     bool isButtonEnabled = widget.controller.text.trim().isNotEmpty;
@@ -46,12 +43,9 @@ class _HomeSearchState extends State<HomeSearch> {
               ],
             ),
             child: TextFormField(
-              maxLines: selectedModel == 'product' ? 1 : null,
-              maxLength: selectedModel == 'product' ? 15 : null,
               controller: widget.controller,
               textAlign: TextAlign.left,
               decoration: InputDecoration(
-                counterText: "",
                 contentPadding: EdgeInsets.symmetric(
                   vertical: widget.isCompact ? 15 : 20,
                   horizontal: 20,
@@ -78,10 +72,7 @@ class _HomeSearchState extends State<HomeSearch> {
                 ),
                 suffixIcon: widget.showSendButton
                     ? IconButton(
-                  // CHANGED: Call the function and pass the selected model
-                  onPressed: isButtonEnabled
-                      ? () => widget.onSearch?.call(selectedModel ?? 'detailed')
-                      : null,
+                  onPressed: isButtonEnabled ? widget.onSearch : null,
                   icon: const Icon(Icons.send),
                   iconSize: widget.isCompact ? 30 : 40,
                   color: isButtonEnabled
@@ -92,47 +83,6 @@ class _HomeSearchState extends State<HomeSearch> {
               ),
             ),
           ),
-
-          // Show the dropdown ONLY if showSendButton is true AND it is not compact (footer)
-          if (widget.showSendButton && !widget.isCompact) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              child: DropdownButton<String>(
-                value: selectedModel,
-                icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                dropdownColor: AppColors.dropdownSurface,
-                hint: const Text(
-                  "Model",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFFC7D8FF),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: "product", child: Text("Product",style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFFC7D8FF),
-                  ),)),
-                  DropdownMenuItem(value: "detailed", child: Text("Detailed",style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFFC7D8FF),
-                  ),)),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    selectedModel = value;
-                    if (value == 'product' && widget.controller.text.length > 35) {
-                      widget.controller.text = widget.controller.text.substring(0, 35);
-                    }
-                  });
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
         ],
       ),
     );

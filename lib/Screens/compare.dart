@@ -3,6 +3,7 @@ import 'package:aio_tech/Widgets/home_search.dart';
 import 'package:aio_tech/Widgets/result_comparison_format.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../services/auth_services.dart';
 import '../services/product_service.dart';
 import '../Widgets/new_chat.dart';
 import '../utils/app_colors.dart';
@@ -19,6 +20,7 @@ class _CompareState extends State<Compare> {
   final TextEditingController _device1Controller = TextEditingController();
   final TextEditingController _device2Controller = TextEditingController();
   final ProductService _productService = ProductService();
+  final AuthService _authService = AuthService();
 
   bool _hasCompared = false;
   bool _isLoading = false;
@@ -47,6 +49,8 @@ class _CompareState extends State<Compare> {
 
   // Make this async and call the FastAPI
   Future<void> _performComparison() async {
+    final int userId = await _authService.getUserId();
+
     setState(() {
       _hasCompared = true;
       _isLoading = true;
@@ -58,6 +62,7 @@ class _CompareState extends State<Compare> {
     final result = await _productService.compareDevices(
       productA: _queryA,
       productB: _queryB,
+      userId: userId,
     );
 
     setState(() {
@@ -85,7 +90,7 @@ class _CompareState extends State<Compare> {
   Widget _buildInitialView() {
     final bool isButtonEnabled =
         _device1Controller.text.trim().isNotEmpty &&
-        _device2Controller.text.trim().isNotEmpty;
+            _device2Controller.text.trim().isNotEmpty;
 
     return ListView(
       padding: EdgeInsetsDirectional.all(10),
@@ -108,7 +113,7 @@ class _CompareState extends State<Compare> {
             constraints: const BoxConstraints(maxWidth: 500),
             child: HomeSearch(
               showSendButton: false,
-              searchHint: "Device 1",
+              searchHint: tr('device1'),
               controller: _device1Controller,
             ),
           ),
@@ -119,7 +124,7 @@ class _CompareState extends State<Compare> {
             constraints: const BoxConstraints(maxWidth: 500),
             child: HomeSearch(
               showSendButton: false,
-              searchHint: "Device 2",
+              searchHint: tr('device2'),
               controller: _device2Controller,
             ),
           ),
@@ -127,19 +132,19 @@ class _CompareState extends State<Compare> {
         const SizedBox(height: 60),
 
 
-           Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: ElevatedButton(
-                onPressed: isButtonEnabled ? _performComparison : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isButtonEnabled
-                      ? AppColors.buttonBackground
-                      : Colors.grey.shade400,
-                ),
-                child: const Text(
-                  "Compare",
-                  style: TextStyle(color: Colors.white),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: ElevatedButton(
+              onPressed: isButtonEnabled ? _performComparison : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isButtonEnabled
+                    ? AppColors.buttonBackground
+                    : Colors.grey.shade400,
+              ),
+              child:  Text(
+                tr('compare'),
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ),
@@ -151,7 +156,7 @@ class _CompareState extends State<Compare> {
   Widget _buildResultsView() {
     final bool isButtonEnabled =
         _device1Controller.text.trim().isNotEmpty &&
-        _device2Controller.text.trim().isNotEmpty;
+            _device2Controller.text.trim().isNotEmpty;
 
     return Column(
       children: [
@@ -208,7 +213,7 @@ class _CompareState extends State<Compare> {
                   ),
                 )
               else if (_compareResult != null)
-                ResultComparisonFormat(data: _compareResult!),
+                  ResultComparisonFormat(data: _compareResult!),
             ],
           ),
         ),
@@ -269,8 +274,8 @@ class _CompareState extends State<Compare> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    "Update Comparison",
+                  child: Text(
+                    tr('update comparison'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
