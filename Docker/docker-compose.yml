@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg18
+    container_name: postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aio_tech_db
+
+    ports:
+      - "54322:5432"
+
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+    ports:
+      - "5050:80"
