@@ -1,11 +1,15 @@
+import os
+
+from google import genai
 from google.adk.agents import LlmAgent
 from google.adk.runners import InMemoryRunner
 
 from ai.prompt_templates.english_locale import product_description
-
+from helpers.config import get_settings
 
 class ProductDescriptionAgent:
     def __init__(self, model: str, search_tool):
+        os.environ["GEMINI_API_KEY"] = get_settings().GEMINI_API_KEY        
         self.agent = LlmAgent(
             name="product_description_agent",
             model=model,

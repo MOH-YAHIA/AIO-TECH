@@ -1,11 +1,13 @@
 from google.adk.agents import LlmAgent
 from google.adk.runners import InMemoryRunner
+import os 
 
 from ai.prompt_templates.english_locale import social_reviews
-
+from helpers.config import get_settings
 
 class SocialReviewsAgent:
     def __init__(self, model: str, search_tool):
+        os.environ["GEMINI_API_KEY"] = get_settings().GEMINI_API_KEY
         self.agent = LlmAgent(
             name="social_reviews_agent",
             model=model,
