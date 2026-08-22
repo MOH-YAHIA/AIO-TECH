@@ -1,1 +1,2 @@
 from .ProductResarchService import ProductResearchService
+from .EmbeddingService import EmbeddingService

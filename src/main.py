@@ -1,19 +1,14 @@
-import asyncio
-from uuid import UUID, uuid4
-from datetime import datetime, timezone
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from database import DatabaseManager
 from helpers.config import get_settings
-from models.CategoryModel import CategoryModel
-from models.pydantic_schemas.category import Category
-from models.pydantic_schemas.brand import Brand
-from repositories.CategoryRepository import CategoryRepository
-from repositories.BrandRepository import BrandRepository
-from models.pydantic_schemas.product import Product
-from repositories.ProductRepository import ProductRepository
-async def main():
+from routes.data import data_router
+import uvicorn
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     settings = get_settings()
-
+    
     database_manager = DatabaseManager(
         settings.DATABASE_URL
     )
@@ -26,60 +21,21 @@ async def main():
 
     # Open database session
     async with session_manager() as session:
-        product_repository = ProductRepository(session)
-        brand_repository = BrandRepository(session)
-        category_repository = CategoryRepository(session)
+        app.session = session
 
-        # Create brand
-        brand = Brand(
-            id=uuid4(),
-            name="Apple",
-        )
+    yield
 
-        created_brand = await brand_repository.get_by_name("Apple")
+    await database_manager.close_database_engine()
 
-        # Create category
-        category = Category(
-            id=uuid4(),
-            name="Smartphones",
-        )
+def create_app() -> FastAPI:
+    app = FastAPI(lifespan=lifespan)
 
-        created_category = await category_repository.get_by_name("Smartphones")
+    app.include_router(data_router)
 
-        # Create product
-        product = Product(
-            name="iPhone 17",
-            description="Latest Apple smartphone",
-            pros=[
-                "Excellent camera",
-                "Powerful performance",
-                "Long battery life",
-            ],
-            cons=[
-                "Expensive",
-                "No charger included",
-            ],
-            price_usd=999.99,
-            global_rating=4.7,
-            semantic_summary="A premium smartphone with excellent performance and camera quality.",
-            image_url="https://example.com/iphone17.jpg",
+    return app
 
-            # Existing brand
-            brand_id=created_brand.id,
-
-            # Existing category
-            category_id=created_category.id,
-
-            # Must contain exactly the dimension of your VECTOR column
-            embedding=[0.0] * 2048,
-
-            last_updated=datetime.now(timezone.utc),
-        )
-
-        created_product = await product_repository.create(product)
-
-        print(created_product.model_dump())
-
+app = create_app()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload

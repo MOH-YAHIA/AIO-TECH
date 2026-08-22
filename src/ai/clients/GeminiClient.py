@@ -8,13 +8,12 @@ from ai.prompt_templates.english_locale import product_response
 class GeminiClient:
     def __init__(
         self,
-        model: str,
     ):
         self.client = genai.Client(api_key=get_settings().GEMINI_API_KEY)
-        self.model = model
 
     async def create_product_response(
         self,
+        model: str,
         product_name: str,
         market_info: dict,
         description: str,
@@ -29,7 +28,7 @@ class GeminiClient:
         )
 
         response = await self.client.aio.models.generate_content(
-            model=self.model,
+            model=model,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=(
@@ -41,3 +40,19 @@ class GeminiClient:
         )
 
         return ProductResarchSchema.model_validate_json(response.text)
+
+    async def embed_text(
+        self,
+        model: str,
+        text: str,
+        embedding_dim: int,
+    ) -> list[float]:
+        response = await self.client.aio.models.embed_content(
+            model=model,
+            contents=text,
+            config={
+                'output_dimensionality': embedding_dim
+            }
+        )
+
+        return response.embeddings[0].values
