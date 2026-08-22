@@ -12,11 +12,13 @@ class ProductResearchService:
         self,
         product_description_agent: ProductDescriptionAgent,
         social_reviews_agent: SocialReviewsAgent,
-        gemini_client: GeminiClient,
+        llm_client: GeminiClient,
+        generation_model: str,
     ):
         self.product_description_agent = product_description_agent
         self.social_reviews_agent = social_reviews_agent
-        self.gemini_client = gemini_client
+        self.llm_client = llm_client
+        self.generation_model= generation_model
 
     async def research(self, product_name: str) -> ProductResarchSchema:
 
@@ -30,7 +32,8 @@ class ProductResearchService:
             ),
         )
 
-        return await self.gemini_client.create_product_response(
+        return await self.llm_client.create_product_response(
+            model=self.generation_model,
             product_name=product_name,
             market_info=market_info,
             description=description,
