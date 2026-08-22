@@ -1,10 +1,10 @@
 import asyncio
 
-from ai.agents.ProductDescriptionAgent import ProductDescriptionAgent
-from ai.agents.SocialReviewsAgent import SocialReviewsAgent
-from ai.clients.GeminiClient import GeminiClient
-from ai.tools.get_product_market_info import get_product_market_info
-from ai.schemas.ProductResarchSchema import ProductResarchSchema
+from ai.agents import ProductDescriptionAgent
+from ai.agents import SocialReviewsAgent
+from ai.clients import GeminiClient
+from ai.tools import get_product_market_info
+from ai.schemas import ProductResarchSchema
 
 
 class ProductResearchService:
