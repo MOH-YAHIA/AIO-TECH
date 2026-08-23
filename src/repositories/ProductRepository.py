@@ -107,7 +107,7 @@ class ProductRepository:
         result = await self.session.execute(
             select(ProductModel)
             .where(similarity >= min_similarity)
-            .order_by(similarity.desc())
+            .order_by(similarity.desc()) # 1 to 0 -> smilar to dissimilar
             .limit(limit)
         )
 
@@ -118,6 +118,30 @@ class ProductRepository:
             for product in db_products
         ]
 
+    async def search_by_embedding_cosine_distance(
+            self,
+            embedding: list[float],
+            max_distance: float = 0.5,
+            limit: int = 10,
+        ) -> list[Product]:
+
+        distance = ProductModel.embedding.cosine_distance(
+            embedding
+        ).label("distance")
+
+        result = await self.session.execute(
+            select(ProductModel)
+            .where(distance <= max_distance)
+            .order_by(distance) # 0 to inf -> similar to dissimilar
+            .limit(limit)
+        )
+
+        db_products = result.scalars().all()
+
+        return [
+            self._to_schema(db_product)
+            for db_product in db_products
+        ]
 
     async def update(self, product: Product) -> Product | None:
 
