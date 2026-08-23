@@ -3,7 +3,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.ProductModel import ProductModel        # SQLAlchemy/PostgreSQL model
@@ -91,6 +91,57 @@ class ProductRepository:
             return None
 
         return self._to_schema(db_product)
+
+    async def search_by_similar_name(
+        self,
+        product_name: str,
+        min_similarity: float = 0.4,
+        limit: int = 10,
+    ) -> list[Product]:
+
+        similarity = func.similarity(
+            ProductModel.name,
+            product_name,
+        ).label("similarity")
+
+        result = await self.session.execute(
+            select(ProductModel)
+            .where(similarity >= min_similarity)
+            .order_by(similarity.desc()) # 1 to 0 -> smilar to dissimilar
+            .limit(limit)
+        )
+
+        db_products = result.scalars().all()
+
+        return [
+            self._to_schema(product)
+            for product in db_products
+        ]
+
+    async def search_by_embedding_cosine_distance(
+            self,
+            embedding: list[float],
+            max_distance: float = 0.5,
+            limit: int = 10,
+        ) -> list[Product]:
+
+        distance = ProductModel.embedding.cosine_distance(
+            embedding
+        ).label("distance")
+
+        result = await self.session.execute(
+            select(ProductModel)
+            .where(distance <= max_distance)
+            .order_by(distance) # 0 to inf -> similar to dissimilar
+            .limit(limit)
+        )
+
+        db_products = result.scalars().all()
+
+        return [
+            self._to_schema(db_product)
+            for db_product in db_products
+        ]
 
     async def update(self, product: Product) -> Product | None:
 
