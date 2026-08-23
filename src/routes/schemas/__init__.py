@@ -4,5 +4,6 @@ from .DataSchemas import (
     UpdateProductRequest,UpdateProductResponse)
 
 from .SearchSchemas import (
-    NameSearchRequest, NameSearchResponse
+    NameSearchRequest, NameSearchResponse,
+    DescriptionSearchRequest, DescriptionSearchResponse
 )

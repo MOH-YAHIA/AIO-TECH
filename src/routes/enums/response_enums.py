@@ -12,3 +12,4 @@ class ResponseEnums(Enum):
     PRODUCT_UPDATED_SUCCESSFULY = "Product updated successfuly"
 
     PRODUCT_SEARCH_NAME_SUCCESS = "Product search name successfuly"
+    PRODUCT_SEARCH_DESCRIPTION_SUCCESS = "Product search description successfuly"
