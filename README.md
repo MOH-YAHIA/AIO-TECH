@@ -4,6 +4,18 @@
 
 </div>
 
+## Table of Contents
+
+* [The Idea](#the-idea)
+* [Ready Features](#ready-features)
+* [AI Research Pipeline](#ai-research-pipeline)
+* [API Endpoints](#api-endpoints)
+* [Backend Architecture](#backend-architecture)
+* [Database Design](#database-design)
+* [Project Structure](#project-structure)
+* [Tech Stack](#tech-stack)
+* [Future Improvements](#future-improvements)
+
 ## The Idea
 
 Choosing an electronics product can be difficult.
@@ -86,37 +98,22 @@ The results from the market information service, reviews agent, and description 
 The final LLM call generates a structured result that can be stored in the database.
 
 ---
+## API Endpoints
 
-## Database Design
+### Data Endpoints
 
-The project uses **PostgreSQL** as the primary database.
+| Method | Endpoint                | Description                                           |
+| ------ | ----------------------- | ----------------------------------------------------- |
+| `POST` | `/data/insert_brand`    | Add a new product brand.                              |
+| `POST` | `/data/insert_category` | Add a new product category.                           |
+| `POST` | `/data/update_product`  | Research and update a product or create it if needed. |
 
-Main entities include:
+### Product Search Endpoints
 
-### Brand
-
-Stores product brands.
-
-### Category
-
-Stores product categories.
-
-### Product
-
-Stores researched product information, including:
-
-* Product name
-* Brand
-* Category
-* Description
-* Pros
-* Cons
-* Price
-* Rating
-* Image
-* Social review summary
-* Embedding vector for the product description, pros, and cons
-* Last update date
+| Method | Endpoint              | Description                                                                  |
+| ------ | --------------------- | ---------------------------------------------------------------------------- |
+| `POST` | `/search/name`        | Find products with similar names.                                            |
+| `POST` | `/search/description` | Find products based on a natural-language description using semantic search. |
 
 ---
 
@@ -159,6 +156,39 @@ AIO-TECH follows a layered backend architecture to separate API logic, business 
            │ AI Agents      │       │ pgvector       │
            └────────────────┘       └────────────────┘
 ```
+
+---
+
+## Database Design
+
+The project uses **PostgreSQL** as the primary database.
+
+Main entities include:
+
+### Brand
+
+Stores product brands.
+
+### Category
+
+Stores product categories.
+
+### Product
+
+Stores researched product information, including:
+
+* Product name
+* Brand
+* Category
+* Description
+* Pros
+* Cons
+* Price
+* Rating
+* Image
+* Social review summary
+* Embedding vector for the product description, pros, and cons
+* Last update date
 
 ---
 
