@@ -30,7 +30,10 @@ class DatabaseManager:
             await connection.execute(
                 text("CREATE EXTENSION IF NOT EXISTS vector")
             )
-
+            # Enable pg_trgm extension
+            await connection.execute(
+                text("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+            )
             await connection.run_sync(
                 Base.metadata.create_all # create all tables witch inherit from BaseModel if not exist
             )
