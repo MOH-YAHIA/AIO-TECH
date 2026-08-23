@@ -3,7 +3,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.ProductModel import ProductModel        # SQLAlchemy/PostgreSQL model
@@ -91,6 +91,33 @@ class ProductRepository:
             return None
 
         return self._to_schema(db_product)
+
+    async def search_by_similar_name(
+        self,
+        product_name: str,
+        min_similarity: float = 0.4,
+        limit: int = 10,
+    ) -> list[Product]:
+
+        similarity = func.similarity(
+            ProductModel.name,
+            product_name,
+        ).label("similarity")
+
+        result = await self.session.execute(
+            select(ProductModel)
+            .where(similarity >= min_similarity)
+            .order_by(similarity.desc())
+            .limit(limit)
+        )
+
+        db_products = result.scalars().all()
+
+        return [
+            self._to_schema(product)
+            for product in db_products
+        ]
+
 
     async def update(self, product: Product) -> Product | None:
 
