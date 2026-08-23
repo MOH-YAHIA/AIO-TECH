@@ -148,12 +148,13 @@ AIO-TECH follows a layered backend architecture to separate API logic, business 
                    │                        │
                    ▼                        ▼
            ┌────────────────┐       ┌────────────────┐
-           │ Embedding      │       │    Database    │
-           │ Service        │       │    Operations  │
+           │   Embedding    │       │    Database    │
+           │    Service     │       │   Operations   │
            │                │       │                │
-           │ Research       │       │ SQLAlchemy     │
-           │ Service        │       │ pg_trgm        │
-           │ AI Agents      │       │ pgvector       │
+           │    Research    │       │   SQLAlchemy   │
+           │    Service     │       │                │
+           │                │       │    pg_trgm     │
+           │   AI Agents    │       │    pgvector    │
            └────────────────┘       └────────────────┘
 ```
 
