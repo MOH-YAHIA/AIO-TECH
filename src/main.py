@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from database import DatabaseManager
 from helpers.config import get_settings
 from routes.data import data_router
+from routes.search import search_router
 import uvicorn
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
 
     app.include_router(data_router)
+    app.include_router(search_router)
 
     return app
 

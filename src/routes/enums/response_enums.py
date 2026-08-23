@@ -10,3 +10,5 @@ class ResponseEnums(Enum):
     CATEGORY_NOT_FOUND = "Category not found"
 
     PRODUCT_UPDATED_SUCCESSFULY = "Product updated successfuly"
+
+    PRODUCT_SEARCH_NAME_SUCCESS = "Product search name successfuly"
