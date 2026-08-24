@@ -8,7 +8,6 @@
 
 * [The Idea](#the-idea)
 * [Ready Features](#ready-features)
-* [AI Research Pipeline](#ai-research-pipeline)
 * [API Endpoints](#api-endpoints)
 * [Backend Architecture](#backend-architecture)
 * [Database Design](#database-design)
@@ -47,36 +46,32 @@ and instead help answer:
 
 > **"What do real users think about this product?"**
 
-By understanding real user experiences, AIO-TECH aims to help users find electronics products that **best satisfy their individual needs and expectations**.
-
-Rather than requiring users to manually search through hundreds of reviews and social media posts, AIO-TECH uses AI to analyze this feedback and provide a clear, meaningful understanding of the product based on the experiences of real users.
 
 ---
 
 ## Ready Features
 
-* Research a specific product.
+* Do AI research on a specific product.
 * Find products based on a user's description.
 
----
 
-## AI Research Pipeline
+### AI Research Pipeline
 
-When a new product is added, AIO-TECH performs an AI-powered research workflow.
+For each product, AIO-TECH performs an AI-powered research workflow.
 
 ![AIO-TECH Research Workflow](docs/Produt_Research_Flow.png)
 
 The research pipeline collects information from multiple sources.
 
-### Market Information
+#### Market Information
 
 Used to collect product market data such as:
 
 * Product price
 * Product rating
-* Product images
+* Product image
 
-### Social Reviews
+#### Social Reviews
 
 Researches and summarizes opinions and reviews about the product.
 
@@ -87,15 +82,36 @@ The goal is to identify:
 * User experiences
 * Frequently mentioned advantages and disadvantages
 
-### Product Description
+#### Product Description
 
 Researches product specifications and generates useful product information and descriptions.
 
-### Final AI Processing
+#### Final AI Processing
 
 The results from the market information service, reviews agent, and description agent are combined and sent to a final LLM call.
 
 The final LLM call generates a structured result that can be stored in the database.
+
+---
+
+### Semantic Product Search
+
+AIO-TECH allows users to find products based on a **natural-language description** of what they are looking for.
+
+For each product, the system stores an **embedding vector** generated from its:
+
+* Description
+* Pros
+* Cons
+
+When a user enters a description, AIO-TECH:
+
+1. Converts the user's description into an embedding vector.
+2. Compares it with the embedding vectors of stored products.
+3. Calculates the **cosine distance** between the user's embedding and each product embedding.
+4. Returns the products with the the **lowest distance**.
+
+This allows users to search for products based on **meaning and requirements**, rather than only using exact product names or keywords.
 
 ---
 ## API Endpoints
@@ -162,19 +178,22 @@ AIO-TECH follows a layered backend architecture to separate API logic, business 
 
 ## Database Design
 
-The project uses **PostgreSQL** as the primary database.
+The project uses **PostgreSQL** as the primary database, with **SQLAlchemy** as the ORM and **psycopg** as the PostgreSQL driver, with two extensions:
+* pgvector — used to store product embedding vectors and perform vector similarity search.
+* pg_trgm — used for fuzzy text search, such as finding products with similar names.
 
-Main entities include:
 
-### Brand
+### Main entities include:
+
+#### Brand
 
 Stores product brands.
 
-### Category
+#### Category
 
 Stores product categories.
 
-### Product
+#### Product
 
 Stores researched product information, including:
 
@@ -251,6 +270,7 @@ AIO-TECH/
 | **SQLAlchemy**    | ORM and database operations          |
 | **PostgreSQL**    | Relational database                  |
 | **pgvector**      | Vector storage and similarity search |
+| **pg_trgm**       | Fuzzy text search                    |
 | **Google Gemini** | AI generation and embeddings         |
 | **Google ADK**    | AI agent framework                   |
 | **SerpAPI**       | Product market information           |
@@ -266,6 +286,7 @@ Some planned improvements for the project include:
 
 * Product comparison, allowing users to compare products.
 * Product price history tracking.
+* Finding the e-commerce website offering the lowest product price.
 * Price alert notifications when a tracked product reaches a specific price threshold.
 * Product recommendation system.
 * More data sources.
